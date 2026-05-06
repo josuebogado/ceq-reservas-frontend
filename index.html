@@ -496,12 +496,19 @@
         events: function(info, successCallback) {
           const eventos = reservasActuales
             .filter(r => r.espacio_id === espacioSeleccionado && r.estado === 'activa')
-            .map(r => ({
-              id: r.id,
-              title: `${r.hora_inicio}`,
-              start: `${r.fecha}T${r.hora_inicio}`,
-              extendedProps: { nombre: r.nombre_solicitante }
-            }));
+            .reduce((acc, r) => {
+              // Agrupar por fecha para mostrar un solo evento por día
+              const existente = acc.find(e => e.start.startsWith(r.fecha));
+              if (!existente) {
+                acc.push({
+                  id: r.id,
+                  title: '●',
+                  start: `${r.fecha}T08:00`,
+                  extendedProps: { nombre: r.nombre_solicitante }
+                });
+              }
+              return acc;
+            }, []);
           successCallback(eventos);
         },
         dateClick: function(info) {
@@ -586,7 +593,13 @@
         return;
       }
 
-      // Si hace click en el primer botón de una nueva selección
+      // Máximo 3 horas
+      if (horasSeleccionadas.length >= 3) {
+        mostrarError('Máximo 3 horas de duración');
+        return;
+      }
+
+      // Si hace click en el primer botón
       if (horasSeleccionadas.length === 0) {
         horasSeleccionadas = [btn.textContent];
         btn.classList.add('selected');
@@ -595,18 +608,31 @@
         return;
       }
 
-      // Si hace click en el siguiente botón consecutivo
-      const ultimaSeleccionada = horasSeleccionadas[horasSeleccionadas.length - 1];
-      const [ultimaHora] = ultimaSeleccionada.split(':');
-      const [clickHora] = btn.textContent.split(':');
+      // Obtener todas las horas seleccionadas y ordenarlas
+      const horasConNueva = [...horasSeleccionadas, btn.textContent];
+      const horasOrdenadas = horasConNueva.sort();
 
-      if (parseInt(clickHora) === parseInt(ultimaHora) + 1 && horasSeleccionadas.length < 3) {
-        horasSeleccionadas.push(btn.textContent);
-        btn.classList.add('selected');
-        mostrarRango();
-        validarFormulario();
+      // Verificar que sean consecutivas
+      let sonConsecutivas = true;
+      for (let i = 0; i < horasOrdenadas.length - 1; i++) {
+        const [horaActual] = horasOrdenadas[i].split(':');
+        const [horaSiguiente] = horasOrdenadas[i + 1].split(':');
+        if (parseInt(horaSiguiente) !== parseInt(horaActual) + 1) {
+          sonConsecutivas = false;
+          break;
+        }
+      }
+
+      if (!sonConsecutivas) {
+        mostrarError('Las horas deben ser consecutivas');
         return;
       }
+
+      // Agregar la nueva hora
+      horasSeleccionadas = horasOrdenadas;
+      btn.classList.add('selected');
+      mostrarRango();
+      validarFormulario();
     }
 
     function mostrarRango() {
@@ -678,7 +704,21 @@
         return;
       }
 
+      if (!motivo) {
+        mostrarError('El motivo es obligatorio');
+        return;
+      }
+
       try {
+        // Calcular hora_fin basado en las horas seleccionadas
+        const [horaInicio] = horasSeleccionadas[0].split(':');
+        const [horaFin] = horasSeleccionadas[horasSeleccionadas.length - 1].split(':');
+        const minuto = horasSeleccionadas[0].split(':')[1];
+        
+        // hora_fin es la hora siguiente a la última hora seleccionada
+        const horaFinCalculada = String(parseInt(horaFin) + 1).padStart(2, '0') + ':' + minuto;
+
+        // Crear una SOLA reserva (no múltiples)
         const res = await fetch(`${API_BASE}/reservas`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -698,8 +738,7 @@
           return;
         }
 
-        const [hFin] = horasSeleccionadas[horasSeleccionadas.length - 1].split(':');
-        mostrarExito(`Reserva creada: ${horasSeleccionadas[0]} - ${String(parseInt(hFin) + 1).padStart(2, '0')}:00`);
+        mostrarExito(`Reserva creada: ${horasSeleccionadas[0]} - ${horaFinCalculada}`);
         
         document.getElementById('nombre').value = '';
         document.getElementById('celular').value = '';
