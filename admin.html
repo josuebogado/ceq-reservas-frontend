@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin — Reservas CEQ</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #0f2a4a 0%, #1a3a6b 50%, #0d1f3c 100%);
+      color: #e8dcc8;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: linear-gradient(90deg, #1a3a6b 0%, #2a5298 100%);
+      border-bottom: 3px solid #c8a84b;
+      padding: 24px 32px;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+
+    .auth-section {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .password-input {
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: #f0e6d0;
+      font-size: 13px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: #c8a84b;
+      color: #1a3a6b;
+    }
+
+    .btn-primary:hover {
+      background: #d4b662;
+    }
+
+    .btn-danger {
+      background: #c84040;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #d45050;
+    }
+
+    main {
+      background: rgba(15, 32, 64, 0.95);
+      border: 1px solid rgba(200, 168, 75, 0.2);
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .login-screen {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .login-screen h2 {
+      font-size: 20px;
+      margin-bottom: 24px;
+    }
+
+    .login-form {
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .form-group input {
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #f0e6d0;
+      font-size: 14px;
+    }
+
+    .admin-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: rgba(200, 168, 75, 0.08);
+      border: 1px solid rgba(200, 168, 75, 0.2);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-card h3 {
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: #c8a84b;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .stat-card .number {
+      font-size: 32px;
+      font-weight: 600;
+      color: #f0e6d0;
+    }
+
+    .filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filters select,
+    .filters input {
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(200, 168, 75, 0.2);
+      color: #f0e6d0;
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    thead {
+      background: rgba(26, 58, 107, 0.3);
+      border-bottom: 1px solid rgba(200, 168, 75, 0.2);
+    }
+
+    th {
+      padding: 16px;
+      text-align: left;
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: #c8a84b;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13px;
+    }
+
+    tbody tr:hover {
+      background: rgba(200, 168, 75, 0.05);
+    }
+
+    .estado-activa {
+      color: #8c8;
+      font-weight: 600;
+    }
+
+    .estado-cancelada {
+      color: #e88;
+      text-decoration: line-through;
+    }
+
+    .multa-si {
+      color: #e88;
+      font-weight: 600;
+    }
+
+    .multa-no {
+      color: #888;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 11px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel {
+      background: rgba(200, 80, 80, 0.2);
+      color: #e88;
+      border: 1px solid rgba(200, 80, 80, 0.3);
+    }
+
+    .btn-cancel:hover {
+      background: rgba(200, 80, 80, 0.35);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .modal-content {
+      background: #0f2040;
+      border: 1px solid rgba(200, 168, 75, 0.3);
+      border-radius: 14px;
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-header {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: #f0e6d0;
+    }
+
+    .modal-body {
+      margin-bottom: 20px;
+    }
+
+    .modal-body p {
+      margin-bottom: 12px;
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+
+    .error {
+      background: rgba(200, 80, 80, 0.15);
+      border: 1px solid rgba(200, 80, 80, 0.3);
+      color: #e88;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .success {
+      background: rgba(80, 200, 80, 0.15);
+      border: 1px solid rgba(80, 200, 80, 0.3);
+      color: #8c8;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚙ Panel Administrativo — Reservas CEQ</h1>
+      <div class="auth-section" id="authSection">
+        <input type="password" id="passwordInput" class="password-input" placeholder="Contraseña">
+        <button class="btn btn-primary" id="loginBtn">Entrar</button>
+      </div>
+    </header>
+
+    <main id="mainContent" class="hidden">
+      <div id="messageContainer"></div>
+
+      <!-- Estadísticas -->
+      <div class="stats">
+        <div class="stat-card">
+          <h3>Reservas Activas</h3>
+          <div class="number" id="statActivas">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Cancelaciones Totales</h3>
+          <div class="number" id="statCancelaciones">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Cancelaciones con Multa</h3>
+          <div class="number" id="statMultas">0</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filters">
+        <select id="filterEstado">
+          <option value="">Todos los estados</option>
+          <option value="activa">Activas</option>
+          <option value="cancelada">Canceladas</option>
+        </select>
+        <select id="filterEspacio">
+          <option value="">Todos los espacios</option>
+        </select>
+        <input type="date" id="filterFecha">
+        <button class="btn btn-primary" id="btnLimpiarFiltros">Limpiar filtros</button>
+      </div>
+
+      <!-- Tabla de reservas -->
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Solicitante</th>
+              <th>Contacto</th>
+              <th>Espacio</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="reservasTable">
+            <tr>
+              <td colspan="8" class="loading">Cargando...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- Modal de cancelación -->
+    <div class="modal hidden" id="modalCancelar">
+      <div class="modal-content">
+        <div class="modal-header">Cancelar Reserva</div>
+        <div class="modal-body">
+          <p><strong id="modalReservaInfo">Cargando...</strong></p>
+          <p id="modalAplicaMulta" style="display:none; color: #e88;">⚠ Esta cancelación aplicaría multa (menos de 2 días de anticipación)</p>
+          <div class="form-group">
+            <label style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Motivo (opcional)</label>
+            <textarea id="modalMotivo" style="padding: 10px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f0e6d0; font-size: 13px; min-height: 80px; resize: vertical;"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" style="background: rgba(255,255,255,0.1); color: #777;" onclick="cerrarModal()">Cancelar</button>
+          <button class="btn btn-danger" id="btnConfirmarCancelacion">Confirmar cancelación</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://ceq-reservas-api.onrender.com/api';
+    let isAuthenticated = false;
+    let reservas = [];
+    let espacios = [];
+    let reservaParaCancelar = null;
+
+    // Login
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const password = document.getElementById('passwordInput').value;
+      if (password === 'admin123') { // Cambiar a contraseña más segura
+        isAuthenticated = true;
+        document.getElementById('authSection').innerHTML = `
+          <div style="color: #8c8; font-weight: 600;">✓ Autenticado</div>
+          <button class="btn btn-danger" onclick="logout()">Salir</button>
+        `;
+        document.getElementById('mainContent').classList.remove('hidden');
+        cargarDatos();
+      } else {
+        mostrarError('Contraseña incorrecta');
+      }
+    });
+
+    function logout() {
+      isAuthenticated = false;
+      document.getElementById('authSection').innerHTML = `
+        <input type="password" id="passwordInput" class="password-input" placeholder="Contraseña">
+        <button class="btn btn-primary" id="loginBtn">Entrar</button>
+      `;
+      document.getElementById('mainContent').classList.add('hidden');
+      document.getElementById('loginBtn').addEventListener('click', () => {
+        const password = document.getElementById('passwordInput').value;
+        if (password === 'admin123') {
+          isAuthenticated = true;
+          document.getElementById('authSection').innerHTML = `
+            <div style="color: #8c8; font-weight: 600;">✓ Autenticado</div>
+            <button class="btn btn-danger" onclick="logout()">Salir</button>
+          `;
+          document.getElementById('mainContent').classList.remove('hidden');
+          cargarDatos();
+        } else {
+          mostrarError('Contraseña incorrecta');
+        }
+      });
+    }
+
+    // Cargar datos
+    async function cargarDatos() {
+      await Promise.all([cargarEspacios(), cargarReservas(), cargarEstadisticas()]);
+    }
+
+    async function cargarEspacios() {
+      try {
+        const res = await fetch(`${API_BASE}/espacios`);
+        espacios = await res.json();
+        const select = document.getElementById('filterEspacio');
+        select.innerHTML = '<option value="">Todos los espacios</option>';
+        espacios.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id;
+          opt.textContent = e.nombre;
+          select.appendChild(opt);
+        });
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    async function cargarReservas() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/reservas`);
+        reservas = await res.json();
+        renderizarReservas();
+      } catch (error) {
+        mostrarError('Error al cargar reservas');
+      }
+    }
+
+    async function cargarEstadisticas() {
+      try {
+        const res = await fetch(`${API_BASE}/estadisticas`);
+        const stats = await res.json();
+        document.getElementById('statActivas').textContent = stats.reservas_activas;
+        document.getElementById('statCancelaciones').textContent = stats.cancelaciones_totales;
+        document.getElementById('statMultas').textContent = stats.cancelaciones_con_multa;
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    // Renderizar tabla
+    function renderizarReservas() {
+      const tabla = document.getElementById('reservasTable');
+      const estado = document.getElementById('filterEstado').value;
+      const espacio = document.getElementById('filterEspacio').value;
+      const fecha = document.getElementById('filterFecha').value;
+
+      let filtrados = reservas;
+
+      if (estado) filtrados = filtrados.filter(r => r.estado === estado);
+      if (espacio) filtrados = filtrados.filter(r => r.espacio_id === parseInt(espacio));
+      if (fecha) filtrados = filtrados.filter(r => r.fecha === fecha);
+
+      if (filtrados.length === 0) {
+        tabla.innerHTML = '<tr><td colspan="8" class="loading">Sin resultados</td></tr>';
+        return;
+      }
+
+      tabla.innerHTML = filtrados.map(r => `
+        <tr>
+          <td>#${r.id}</td>
+          <td>${r.nombre_solicitante}</td>
+          <td>${r.contacto}</td>
+          <td>${r.espacios?.nombre || 'N/A'}</td>
+          <td>${new Date(r.fecha).toLocaleDateString('es-PY')}</td>
+          <td>${r.hora_inicio}</td>
+          <td class="${r.estado === 'activa' ? 'estado-activa' : 'estado-cancelada'}">
+            ${r.estado === 'activa' ? '✓ Activa' : '✕ Cancelada'}
+          </td>
+          <td>
+            <div class="actions">
+              ${r.estado === 'activa' ? `
+                <button class="btn btn-small btn-cancel" onclick="abrirModalCancelacion(${r.id}, '${r.fecha}', '${r.hora_inicio}', '${r.nombre_solicitante}')">
+                  Cancelar
+                </button>
+              ` : '—'}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Modal de cancelación
+    function abrirModalCancelacion(id, fecha, hora, nombre) {
+      reservaParaCancelar = { id, fecha, hora, nombre };
+      
+      // Calcular si aplica multa
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      const fechaReserva = new Date(fecha);
+      const diasDiferencia = Math.floor((fechaReserva - hoy) / (1000 * 60 * 60 * 24));
+      const aplicaMulta = diasDiferencia < 2;
+
+      document.getElementById('modalReservaInfo').textContent = `${nombre} — ${hora}`;
+      const pMulta = document.getElementById('modalAplicaMulta');
+      if (aplicaMulta) {
+        pMulta.style.display = 'block';
+      } else {
+        pMulta.style.display = 'none';
+      }
+
+      document.getElementById('modalMotivo').value = '';
+      document.getElementById('modalCancelar').classList.remove('hidden');
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalCancelar').classList.add('hidden');
+      reservaParaCancelar = null;
+    }
+
+    document.getElementById('btnConfirmarCancelacion').addEventListener('click', cancelarReserva);
+
+    async function cancelarReserva() {
+      if (!reservaParaCancelar) return;
+
+      try {
+        const motivo = document.getElementById('modalMotivo').value.trim();
+        const res = await fetch(`${API_BASE}/admin/cancelar/${reservaParaCancelar.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ motivo })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        mostrarExito('Reserva cancelada. ' + (data.aplica_multa ? '⚠ Aplica multa' : ''));
+        cerrarModal();
+        await cargarDatos();
+      } catch (error) {
+        mostrarError(error.message);
+      }
+    }
+
+    // Filtros
+    document.getElementById('filterEstado').addEventListener('change', renderizarReservas);
+    document.getElementById('filterEspacio').addEventListener('change', renderizarReservas);
+    document.getElementById('filterFecha').addEventListener('change', renderizarReservas);
+    document.getElementById('btnLimpiarFiltros').addEventListener('click', () => {
+      document.getElementById('filterEstado').value = '';
+      document.getElementById('filterEspacio').value = '';
+      document.getElementById('filterFecha').value = '';
+      renderizarReservas();
+    });
+
+    // Mensajes
+    function mostrarError(msg) {
+      const div = document.getElementById('messageContainer');
+      div.innerHTML = `<div class="error">⚠ ${msg}</div>`;
+      setTimeout(() => div.innerHTML = '', 5000);
+    }
+
+    function mostrarExito(msg) {
+      const div = document.getElementById('messageContainer');
+      div.innerHTML = `<div class="success">✓ ${msg}</div>`;
+      setTimeout(() => div.innerHTML = '', 5000);
+    }
+  </script>
+</body>
+</html>

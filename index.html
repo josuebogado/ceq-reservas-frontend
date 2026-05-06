@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Reservas CEQ</title>
+  
+  <!-- FullCalendar -->
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.js'></script>
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.css' rel='stylesheet' />
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #0f2a4a 0%, #1a3a6b 50%, #0d1f3c 100%);
+      color: #e8dcc8;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(15, 32, 64, 0.95);
+      border-radius: 16px;
+      border: 1px solid rgba(200, 168, 75, 0.2);
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    header {
+      background: linear-gradient(90deg, #1a3a6b 0%, #2a5298 100%);
+      border-bottom: 3px solid #c8a84b;
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+
+    header .badge {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 20px;
+      padding: 28px;
+    }
+
+    .calendar-wrapper {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(200, 168, 75, 0.15);
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .form-panel {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(200, 168, 75, 0.15);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #f0e6d0;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #c8a84b;
+      background: rgba(200, 168, 75, 0.08);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .hours-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .hour-btn {
+      padding: 8px;
+      border: 1px solid rgba(200, 168, 75, 0.3);
+      background: rgba(200, 168, 75, 0.08);
+      color: #d4c070;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .hour-btn:hover {
+      border-color: #c8a84b;
+      background: rgba(200, 168, 75, 0.15);
+    }
+
+    .hour-btn.selected {
+      background: #c8a84b;
+      color: #1a3a6b;
+      border-color: #c8a84b;
+      font-weight: 600;
+    }
+
+    .hour-btn.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.2);
+      color: #555;
+    }
+
+    button.btn-primary {
+      padding: 12px;
+      background: linear-gradient(135deg, #c8a84b, #e0c46a);
+      color: #1a3a6b;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+    }
+
+    button.btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(200, 168, 75, 0.3);
+    }
+
+    button.btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .status-success {
+      background: rgba(80, 200, 80, 0.15);
+      border: 1px solid rgba(80, 200, 80, 0.3);
+      color: #8c8;
+    }
+
+    .status-error {
+      background: rgba(200, 80, 80, 0.15);
+      border: 1px solid rgba(200, 80, 80, 0.3);
+      color: #e88;
+    }
+
+    .status-info {
+      background: rgba(100, 150, 200, 0.15);
+      border: 1px solid rgba(100, 150, 200, 0.3);
+      color: #8ac;
+    }
+
+    /* FullCalendar customización */
+    .fc {
+      --fc-bg-event-opacity: 0.8;
+      --fc-event-bg-color: #c8a84b;
+      --fc-event-border-color: #c8a84b;
+      --fc-event-text-color: #1a3a6b;
+    }
+
+    .fc .fc-button-primary {
+      background-color: #c8a84b;
+      border-color: #c8a84b;
+    }
+
+    .fc .fc-button-primary:hover {
+      background-color: #d4b662;
+      border-color: #d4b662;
+    }
+
+    .fc .fc-button-primary:not(:disabled).fc-button-active {
+      background-color: #b89940;
+      border-color: #b89940;
+    }
+
+    .fc .fc-col-header-cell {
+      background-color: rgba(26, 58, 107, 0.3);
+      border-color: rgba(200, 168, 75, 0.1);
+      color: #d4c070;
+    }
+
+    .fc .fc-daygrid-day {
+      background-color: rgba(15, 32, 64, 0.3);
+      border-color: rgba(200, 168, 75, 0.1);
+    }
+
+    .fc .fc-daygrid-day-frame {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .fc-event-title {
+      font-size: 11px;
+      padding: 2px 4px;
+    }
+
+    @media (max-width: 768px) {
+      .main {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+
+      .hours-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+
+    .spinner {
+      border: 3px solid rgba(200, 168, 75, 0.2);
+      border-top-color: #c8a84b;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Centro de Estudiantes de Química — Reservas de Espacios</h1>
+      <div class="badge" id="stats">Cargando...</div>
+    </header>
+
+    <div class="main">
+      <!-- Calendario -->
+      <div class="calendar-wrapper">
+        <div id="calendar"></div>
+      </div>
+
+      <!-- Formulario -->
+      <div class="form-panel">
+        <div>
+          <h3 style="font-size: 18px; margin-bottom: 16px; font-weight: 400;">Nueva Reserva</h3>
+        </div>
+
+        <div id="statusMessage"></div>
+
+        <div class="form-group">
+          <label for="espacio">Espacio *</label>
+          <select id="espacio" required>
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Fecha *</label>
+          <input type="date" id="fecha" required>
+        </div>
+
+        <div class="form-group">
+          <label>Hora *</label>
+          <div class="hours-grid" id="hoursGrid"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="nombre">Nombre Completo *</label>
+          <input type="text" id="nombre" placeholder="Ej: Juan García" required>
+        </div>
+
+        <div class="form-group">
+          <label for="contacto">Contacto (teléfono o email) *</label>
+          <input type="text" id="contacto" placeholder="Ej: +595 123 456789" required>
+        </div>
+
+        <div class="form-group">
+          <label for="motivo">Motivo (opcional)</label>
+          <textarea id="motivo" placeholder="Descripción breve del uso del espacio..."></textarea>
+        </div>
+
+        <button class="btn-primary" id="btnReservar" disabled>Crear Reserva</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://ceq-reservas-api.onrender.com/api';
+    let calendar;
+    let selectedHora = null;
+    let reservasActuales = [];
+
+    // Inicializar
+    async function init() {
+      await cargarEspacios();
+      await cargarReservas();
+      inicializarCalendario();
+      configurarFormulario();
+    }
+
+    // Cargar espacios
+    async function cargarEspacios() {
+      try {
+        const res = await fetch(`${API_BASE}/espacios`);
+        const espacios = await res.json();
+        const select = document.getElementById('espacio');
+        select.innerHTML = '<option value="">Seleccionar...</option>';
+        espacios.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id;
+          opt.textContent = e.nombre;
+          select.appendChild(opt);
+        });
+      } catch (error) {
+        console.error('Error cargando espacios:', error);
+        mostrarError('No se pudieron cargar los espacios');
+      }
+    }
+
+    // Cargar reservas
+    async function cargarReservas() {
+      try {
+        const res = await fetch(`${API_BASE}/reservas`);
+        reservasActuales = await res.json();
+        actualizarEstadisticas();
+      } catch (error) {
+        console.error('Error cargando reservas:', error);
+      }
+    }
+
+    // Actualizar estadísticas
+    async function actualizarEstadisticas() {
+      try {
+        const res = await fetch(`${API_BASE}/estadisticas`);
+        const stats = await res.json();
+        document.getElementById('stats').textContent = `${stats.reservas_activas} reserva${stats.reservas_activas !== 1 ? 's' : ''} activa${stats.reservas_activas !== 1 ? 's' : ''}`;
+      } catch (error) {
+        console.error('Error cargando estadísticas:', error);
+      }
+    }
+
+    // Inicializar FullCalendar
+    function inicializarCalendario() {
+      const calendarEl = document.getElementById('calendar');
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        firstDay: 1,
+        events: function(info, successCallback, failureCallback) {
+          const eventos = reservasActuales.map(r => ({
+            id: r.id,
+            title: `${r.nombre_solicitante} (${r.hora_inicio})`,
+            start: `${r.fecha}T${r.hora_inicio}`,
+            end: `${r.fecha}T${r.hora_fin}`,
+            extendedProps: {
+              espacio: r.espacio_id,
+              contacto: r.contacto
+            }
+          }));
+          successCallback(eventos);
+        },
+        dateClick: function(info) {
+          const fechaStr = info.dateStr;
+          document.getElementById('fecha').value = fechaStr;
+          actualizarHorasDisponibles(fechaStr);
+          mostrarInfo('Fecha seleccionada: ' + new Date(fechaStr).toLocaleDateString('es-PY'));
+        },
+        eventClick: function(info) {
+          const event = info.event;
+          mostrarInfo(`${event.title}<br>Contacto: ${event.extendedProps.contacto}`);
+        }
+      });
+      calendar.render();
+    }
+
+    // Configurar formulario
+    function configurarFormulario() {
+      const fechaInput = document.getElementById('fecha');
+      const espacio = document.getElementById('espacio');
+
+      // Hoy no puede ser seleccionado
+      const hoy = new Date();
+      const minDate = new Date(hoy);
+      minDate.setDate(minDate.getDate() + 1);
+      fechaInput.min = minDate.toISOString().split('T')[0];
+
+      fechaInput.addEventListener('change', () => {
+        const fecha = fechaInput.value;
+        if (fecha) actualizarHorasDisponibles(fecha);
+      });
+
+      espacio.addEventListener('change', () => {
+        const fecha = fechaInput.value;
+        if (fecha) actualizarHorasDisponibles(fecha);
+      });
+
+      document.getElementById('btnReservar').addEventListener('click', crearReserva);
+      
+      // Validar cambios en inputs
+      document.getElementById('nombre').addEventListener('input', validarFormulario);
+      document.getElementById('contacto').addEventListener('input', validarFormulario);
+    }
+
+    // Actualizar horas disponibles
+    function actualizarHorasDisponibles(fecha) {
+      const especioId = document.getElementById('espacio').value;
+      const grid = document.getElementById('hoursGrid');
+      grid.innerHTML = '';
+      selectedHora = null;
+
+      const horas = Array.from({ length: 10 }, (_, i) => `${(i + 8).toString().padStart(2, '0')}:00`);
+
+      // Horas ocupadas
+      const ocupadas = reservasActuales
+        .filter(r => r.fecha === fecha && r.espacio_id == especioId && r.estado === 'activa')
+        .map(r => r.hora_inicio);
+
+      horas.forEach(hora => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'hour-btn';
+        btn.textContent = hora;
+
+        const estaOcupada = ocupadas.includes(hora);
+        if (estaOcupada) {
+          btn.classList.add('disabled');
+          btn.disabled = true;
+        } else {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.hour-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedHora = hora;
+            validarFormulario();
+          });
+        }
+        grid.appendChild(btn);
+      });
+    }
+
+    // Validar formulario
+    function validarFormulario() {
+      const nombre = document.getElementById('nombre').value.trim();
+      const contacto = document.getElementById('contacto').value.trim();
+      const espacio = document.getElementById('espacio').value;
+      const fecha = document.getElementById('fecha').value;
+      const btn = document.getElementById('btnReservar');
+
+      btn.disabled = !(nombre && contacto && espacio && fecha && selectedHora);
+    }
+
+    // Crear reserva
+    async function crearReserva() {
+      const nombre = document.getElementById('nombre').value.trim();
+      const contacto = document.getElementById('contacto').value.trim();
+      const espacio = document.getElementById('espacio').value;
+      const fecha = document.getElementById('fecha').value;
+      const motivo = document.getElementById('motivo').value.trim();
+
+      if (!nombre || !contacto || !espacio || !fecha || !selectedHora) {
+        mostrarError('Completa todos los campos obligatorios');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/reservas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            espacio_id: parseInt(espacio),
+            nombre_solicitante: nombre,
+            contacto,
+            fecha,
+            hora_inicio: selectedHora,
+            motivo
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          mostrarError(data.error);
+          return;
+        }
+
+        mostrarExito('¡Reserva creada exitosamente!');
+        
+        // Limpiar formulario
+        document.getElementById('nombre').value = '';
+        document.getElementById('contacto').value = '';
+        document.getElementById('motivo').value = '';
+        document.getElementById('espacio').value = '';
+        document.getElementById('fecha').value = '';
+        document.getElementById('hoursGrid').innerHTML = '';
+        selectedHora = null;
+
+        // Recargar datos
+        await cargarReservas();
+        calendar.refetchEvents();
+      } catch (error) {
+        console.error('Error:', error);
+        mostrarError('Error al crear la reserva');
+      }
+    }
+
+    // Mensajes
+    function mostrarError(msg) {
+      const div = document.getElementById('statusMessage');
+      div.className = 'status-message status-error';
+      div.textContent = '⚠ ' + msg;
+      setTimeout(() => div.innerHTML = '', 5000);
+    }
+
+    function mostrarExito(msg) {
+      const div = document.getElementById('statusMessage');
+      div.className = 'status-message status-success';
+      div.textContent = '✓ ' + msg;
+      setTimeout(() => div.innerHTML = '', 5000);
+    }
+
+    function mostrarInfo(msg) {
+      const div = document.getElementById('statusMessage');
+      div.className = 'status-message status-info';
+      div.innerHTML = 'ℹ ' + msg;
+      setTimeout(() => div.innerHTML = '', 5000);
+    }
+
+    // Iniciar
+    init();
+  </script>
+</body>
+</html>
