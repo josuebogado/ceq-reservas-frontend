@@ -748,6 +748,18 @@
               </div>
 
               <div class="form-group">
+                <label>Duración (horas)</label>
+                <select id="bloqueDuracion">
+                  <option value="1">1 hora</option>
+                  <option value="2">2 horas</option>
+                  <option value="3">3 horas</option>
+                  <option value="4">4 horas</option>
+                  <option value="5">5 horas</option>
+                  <option value="8">Todo el día (8 horas)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
                 <label>Motivo</label>
                 <input type="text" id="bloqueMotivoInput" placeholder="Ej: Mantenimiento">
               </div>
@@ -960,6 +972,7 @@
       const espacio = document.getElementById('bloqueEspacio').value;
       const fecha = document.getElementById('bloqueFecha').value;
       const horaInicio = document.getElementById('bloqueHoraInicio').value;
+      const duracion = parseInt(document.getElementById('bloqueDuracion').value);
       const motivo = document.getElementById('bloqueMotivoInput').value;
 
       if (!fecha || !horaInicio) {
@@ -969,7 +982,7 @@
 
       try {
         const [hora, minuto] = horaInicio.split(':');
-        const horaFin = String(parseInt(hora) + 1).padStart(2, '0') + ':' + minuto;
+        const horaFin = String(parseInt(hora) + duracion).padStart(2, '0') + ':' + minuto;
 
         const res = await fetch(`${API_BASE}/reservas`, {
           method: 'POST',
@@ -981,7 +994,7 @@
             fecha,
             hora_inicio: horaInicio,
             hora_fin: horaFin,
-            motivo: `Bloqueo: ${motivo}`
+            motivo: `Bloqueo: ${motivo || 'Sin especificar'}`
           })
         });
 
@@ -989,10 +1002,15 @@
           document.getElementById('bloqueFecha').value = '';
           document.getElementById('bloqueHoraInicio').value = '';
           document.getElementById('bloqueMotivoInput').value = '';
+          document.getElementById('bloqueDuracion').value = '1';
           await cargarDatos();
+        } else {
+          const error = await res.json();
+          alert('Error: ' + error.error);
         }
       } catch (error) {
         console.error('Error:', error);
+        alert('Error al bloquear horario');
       }
     }
 
