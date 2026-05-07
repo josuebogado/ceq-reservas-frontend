@@ -6,7 +6,8 @@
   <title>Admin - Sistema de Reservas CEQ</title>
   
   <!-- SheetJS para Excel -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   
   <style>
     * {
@@ -1033,30 +1034,52 @@
       });
 
       try {
+        // Verificar que XLSX esté disponible
+        if (typeof XLSX === 'undefined') {
+          alert('Error: librería de Excel no cargó. Intenta recargar la página.');
+          return;
+        }
+
         // Crear workbook
         const workbook = XLSX.utils.book_new();
         
         Object.keys(porFecha).sort().forEach(fecha => {
-          const datos = porFecha[fecha].map(r => ({
-            'Fecha': r.fecha,
-            'Hora Inicio': r.hora_inicio.substring(0, 5),
-            'Hora Fin': r.hora_fin.substring(0, 5),
-            'Espacio': espacios[r.espacio_id],
-            'Nombre': r.nombre_solicitante,
-            'Celular': r.contacto.split('|')[0].trim(),
-            'Email': r.contacto.split('|')[1].trim(),
-            'Motivo': r.motivo || '-',
-            'Estado': r.estado
-          }));
+          const datos = porFecha[fecha].map(r => {
+            const celular = r.contacto.includes('|') ? r.contacto.split('|')[0].trim() : r.contacto;
+            const email = r.contacto.includes('|') ? r.contacto.split('|')[1].trim() : '';
+            return {
+              'Fecha': r.fecha,
+              'Hora Inicio': r.hora_inicio.substring(0, 5),
+              'Hora Fin': r.hora_fin.substring(0, 5),
+              'Espacio': espacios[r.espacio_id],
+              'Nombre': r.nombre_solicitante,
+              'Celular': celular,
+              'Email': email,
+              'Motivo': r.motivo || '-',
+              'Estado': r.estado
+            };
+          });
 
           const hoja = XLSX.utils.json_to_sheet(datos);
-          XLSX.utils.book_append_sheet(workbook, hoja, fecha);
+          // Ajustar ancho de columnas
+          hoja['!cols'] = [
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 15 },
+            { wch: 20 },
+            { wch: 18 },
+            { wch: 25 },
+            { wch: 20 },
+            { wch: 12 }
+          ];
+          XLSX.utils.book_append_sheet(workbook, hoja, fecha.replace(/-/g, ''));
         });
 
         XLSX.writeFile(workbook, `reservas-ceq-${fechaInicio}-${fechaFin}.xlsx`);
       } catch (error) {
+        console.error('Error detallado:', error);
         alert('Error al exportar: ' + error.message);
-        console.error(error);
       }
     }
 
