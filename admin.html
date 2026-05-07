@@ -675,7 +675,8 @@
                     <th>Horario</th>
                     <th>Espacio</th>
                     <th>Nombre</th>
-                    <th>Contacto</th>
+                    <th>Celular</th>
+                    <th>Email</th>
                     <th>Motivo</th>
                     <th>Estado</th>
                     <th>Acciones</th>
@@ -882,20 +883,23 @@
 
     function mostrarReservas(reservas) {
       const tbody = document.getElementById('reservasTableBody');
-      tbody.innerHTML = reservas.map(r => `
+      tbody.innerHTML = reservas.map(r => {
+        const [celular, email] = r.contacto.split('|').map(c => c.trim());
+        return `
         <tr>
           <td>${r.fecha}</td>
           <td>${r.hora_inicio.substring(0, 5)} - ${r.hora_fin.substring(0, 5)}</td>
           <td>${espacios[r.espacio_id]}</td>
           <td>${r.nombre_solicitante}</td>
-          <td>${r.contacto}</td>
+          <td>${celular}</td>
+          <td>${email}</td>
           <td>${r.motivo || '-'}</td>
           <td><span class="status-badge status-${r.estado}">${r.estado}</span></td>
           <td>
             ${r.estado === 'activa' ? `<button class="btn-small btn-cancel" onclick="abrirCancelacion(${r.id})">Cancelar</button>` : '-'}
           </td>
         </tr>
-      `).join('');
+      `}).join('');
     }
 
     function filtrarReservas() {
