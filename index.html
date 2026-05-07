@@ -379,6 +379,27 @@
         flex-direction: column;
         gap: 12px;
         text-align: center;
+        padding: 16px;
+      }
+
+      header h1 {
+        font-size: 18px;
+      }
+
+      .header-buttons {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .badge {
+        font-size: 11px;
+        padding: 4px 12px;
+      }
+
+      .admin-link {
+        padding: 6px 12px;
+        font-size: 11px;
       }
 
       .space-buttons {
@@ -387,6 +408,127 @@
 
       .space-btn {
         width: 100%;
+        padding: 10px 16px;
+        font-size: 11px;
+      }
+
+      .calendar-grid {
+        gap: 4px;
+      }
+
+      .calendar-day {
+        padding: 6px;
+        font-size: 10px;
+        aspect-ratio: auto;
+        min-height: 60px;
+      }
+
+      .calendar-day-number {
+        font-size: 12px;
+        margin-bottom: 2px;
+      }
+
+      .calendar-day-indicator {
+        font-size: 9px;
+      }
+
+      .form-panel {
+        padding: 16px;
+      }
+
+      .form-panel h3 {
+        font-size: 16px;
+      }
+
+      .form-group label {
+        font-size: 10px;
+      }
+
+      .form-group input,
+      .form-group textarea {
+        padding: 10px;
+        font-size: 13px;
+      }
+
+      .hours-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+
+      .hour-btn {
+        padding: 8px;
+        font-size: 11px;
+      }
+
+      button.btn-primary {
+        padding: 10px;
+        font-size: 12px;
+      }
+
+      .calendar-nav button {
+        padding: 6px 10px;
+        font-size: 10px;
+      }
+
+      .calendar-month {
+        font-size: 14px;
+      }
+
+      .calendar-header-day {
+        font-size: 9px;
+        padding: 4px 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main {
+        padding: 12px;
+        gap: 12px;
+      }
+
+      header {
+        padding: 12px;
+      }
+
+      header h1 {
+        font-size: 16px;
+      }
+
+      .container {
+        border-radius: 8px;
+      }
+
+      .form-panel {
+        padding: 12px;
+      }
+
+      .space-btn {
+        padding: 8px 12px;
+        font-size: 10px;
+      }
+
+      .calendar-day {
+        min-height: 50px;
+        padding: 4px;
+      }
+
+      .calendar-day-number {
+        font-size: 11px;
+      }
+
+      .hours-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-height: 250px;
+      }
+
+      .status-message {
+        font-size: 11px;
+        padding: 8px;
+      }
+
+      .selected-range {
+        font-size: 12px;
+        padding: 8px;
       }
     }
   </style>
