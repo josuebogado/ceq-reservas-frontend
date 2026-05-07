@@ -203,6 +203,12 @@
       border: 2px solid #d86060;
     }
 
+    .calendar-day.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
     .calendar-day-number {
       font-weight: 600;
       color: #d4c070;
@@ -692,9 +698,11 @@
       }
 
       // Días del mes
+      const hoy = new Date();
+      const hoyStr = hoy.toISOString().split('T')[0];
+
       for (let dia = 1; dia <= diasEnMes; dia++) {
         const fecha = `${año}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-        const hoy = new Date().toISOString().split('T')[0];
 
         const reservasDia = reservasActuales.filter(r => 
           r.fecha === fecha && r.espacio_id === espacioSeleccionado && r.estado === 'activa'
@@ -702,15 +710,22 @@
 
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day';
+        
+        // Deshabilitar días pasados
+        const esPasado = fecha < hoyStr;
+        
         if (reservasDia.length > 0) dayEl.classList.add('has-reservas');
-        if (fecha === hoy) dayEl.classList.add('today');
+        if (fecha === hoyStr) dayEl.classList.add('today');
+        if (esPasado) dayEl.classList.add('disabled');
 
         dayEl.innerHTML = `
           <div class="calendar-day-number">${dia}</div>
           ${reservasDia.length > 0 ? `<div class="calendar-day-indicator">${reservasDia.length} reserva${reservasDia.length > 1 ? 's' : ''}</div>` : ''}
         `;
 
-        dayEl.addEventListener('click', () => seleccionarDia(fecha));
+        if (!esPasado) {
+          dayEl.addEventListener('click', () => seleccionarDia(fecha));
+        }
         grid.appendChild(dayEl);
       }
     }
@@ -720,9 +735,13 @@
       document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
       
       // Marcar nuevo día seleccionado
+      const [año, mes, día] = fecha.split('-');
+      const diaNum = parseInt(día);
+      
       const dias = document.querySelectorAll('.calendar-day');
       dias.forEach(d => {
-        if (d.textContent.trim().startsWith(fecha.split('-')[2])) {
+        const textContent = d.querySelector('.calendar-day-number').textContent.trim();
+        if (parseInt(textContent) === diaNum) {
           d.classList.add('selected');
         }
       });
