@@ -824,6 +824,8 @@
       document.getElementById('loginOverlay').style.display = 'flex';
       document.getElementById('adminPanel').classList.add('admin-hidden');
       document.getElementById('passwordInput').value = '';
+      // Redirigir a la página principal
+      window.location.href = 'https://ceq-reservas-frontend.vercel.app/';
     }
 
     // Verificar sesión
@@ -1018,6 +1020,11 @@
       );
       if (espacio) filtradas = filtradas.filter(r => r.espacio_id == espacio);
 
+      if (filtradas.length === 0) {
+        alert('No hay reservas en el rango seleccionado');
+        return;
+      }
+
       // Agrupar por fecha
       const porFecha = {};
       filtradas.forEach(r => {
@@ -1025,27 +1032,32 @@
         porFecha[r.fecha].push(r);
       });
 
-      // Crear workbook
-      const workbook = XLSX.utils.book_new();
-      
-      Object.keys(porFecha).sort().forEach(fecha => {
-        const datos = porFecha[fecha].map(r => ({
-          'Fecha': r.fecha,
-          'Hora Inicio': r.hora_inicio.substring(0, 5),
-          'Hora Fin': r.hora_fin.substring(0, 5),
-          'Espacio': espacios[r.espacio_id],
-          'Nombre': r.nombre_solicitante,
-          'Celular': r.contacto.split('|')[0].trim(),
-          'Email': r.contacto.split('|')[1].trim(),
-          'Motivo': r.motivo || '-',
-          'Estado': r.estado
-        }));
+      try {
+        // Crear workbook
+        const workbook = XLSX.utils.book_new();
+        
+        Object.keys(porFecha).sort().forEach(fecha => {
+          const datos = porFecha[fecha].map(r => ({
+            'Fecha': r.fecha,
+            'Hora Inicio': r.hora_inicio.substring(0, 5),
+            'Hora Fin': r.hora_fin.substring(0, 5),
+            'Espacio': espacios[r.espacio_id],
+            'Nombre': r.nombre_solicitante,
+            'Celular': r.contacto.split('|')[0].trim(),
+            'Email': r.contacto.split('|')[1].trim(),
+            'Motivo': r.motivo || '-',
+            'Estado': r.estado
+          }));
 
-        const hoja = XLSX.utils.json_to_sheet(datos);
-        XLSX.utils.book_append_sheet(workbook, hoja, fecha);
-      });
+          const hoja = XLSX.utils.json_to_sheet(datos);
+          XLSX.utils.book_append_sheet(workbook, hoja, fecha);
+        });
 
-      XLSX.writeFile(workbook, `reservas-ceq-${fechaInicio}-${fechaFin}.xlsx`);
+        XLSX.writeFile(workbook, `reservas-ceq-${fechaInicio}-${fechaFin}.xlsx`);
+      } catch (error) {
+        alert('Error al exportar: ' + error.message);
+        console.error(error);
+      }
     }
 
     // CAMBIAR VISTA
