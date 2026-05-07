@@ -54,6 +54,30 @@
       color: rgba(255, 255, 255, 0.7);
     }
 
+    .header-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .admin-link {
+      padding: 8px 16px;
+      background: rgba(200, 168, 75, 0.2);
+      border: 1px solid rgba(200, 168, 75, 0.4);
+      color: #d4c070;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .admin-link:hover {
+      background: rgba(200, 168, 75, 0.3);
+      border-color: #c8a84b;
+    }
+
     .main {
       padding: 28px;
       display: grid;
@@ -172,6 +196,11 @@
     .calendar-day.today {
       background: rgba(200, 168, 75, 0.2);
       border: 2px solid #c8a84b;
+    }
+
+    .calendar-day.selected {
+      background: rgba(220, 100, 100, 0.25);
+      border: 2px solid #d86060;
     }
 
     .calendar-day-number {
@@ -366,7 +395,10 @@
   <div class="container">
     <header>
       <h1>Centro de Estudiantes de Química — Reservas de Espacios</h1>
-      <div class="badge" id="stats">Cargando...</div>
+      <div class="header-buttons">
+        <div class="badge" id="stats">Cargando...</div>
+        <a href="https://ceq-reservas-frontend.vercel.app/admin.html" class="admin-link">🔐 Admin</a>
+      </div>
     </header>
 
     <div class="main">
@@ -542,6 +574,17 @@
     }
 
     function seleccionarDia(fecha) {
+      // Limpiar selección anterior
+      document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
+      
+      // Marcar nuevo día seleccionado
+      const dias = document.querySelectorAll('.calendar-day');
+      dias.forEach(d => {
+        if (d.textContent.trim().startsWith(fecha.split('-')[2])) {
+          d.classList.add('selected');
+        }
+      });
+
       diaSeleccionado = fecha;
       document.getElementById('fecha').value = fecha;
       actualizarHorasDisponibles(fecha);
