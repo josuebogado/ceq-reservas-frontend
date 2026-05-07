@@ -5,10 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema de Reservas CEQ</title>
   
-  <!-- FullCalendar -->
-  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.js'></script>
-  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.css' rel='stylesheet' />
-  
   <style>
     * {
       margin: 0;
@@ -25,7 +21,7 @@
     }
 
     .container {
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
       background: rgba(15, 32, 64, 0.95);
       border-radius: 16px;
@@ -59,22 +55,17 @@
     }
 
     .main {
-      display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 28px;
       padding: 28px;
-    }
-
-    .calendar-section {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 28px;
     }
 
     .space-buttons {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+      margin-bottom: 24px;
     }
 
     .space-btn {
@@ -102,54 +93,96 @@
       border-color: #c8a84b;
     }
 
-    .calendar-wrapper {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(200, 168, 75, 0.15);
-      border-radius: 12px;
-      padding: 20px;
-      overflow: auto;
+    .calendar-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 20px;
     }
 
-    .reservas-list {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(200, 168, 75, 0.15);
-      border-radius: 12px;
-      padding: 20px;
+    .calendar-nav button {
+      padding: 8px 12px;
+      background: rgba(200, 168, 75, 0.1);
+      border: 1px solid rgba(200, 168, 75, 0.3);
+      color: #d4c070;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
     }
 
-    .reservas-list h4 {
-      font-size: 12px;
-      letter-spacing: 2px;
-      color: #c8a84b;
-      margin-bottom: 16px;
-      text-transform: uppercase;
+    .calendar-nav button:hover {
+      border-color: #c8a84b;
+      background: rgba(200, 168, 75, 0.15);
     }
 
-    .reserva-item {
-      padding: 12px;
-      background: rgba(200, 168, 75, 0.05);
-      border: 1px solid rgba(200, 168, 75, 0.15);
-      border-radius: 6px;
-      margin-bottom: 8px;
-      font-size: 12px;
-    }
-
-    .reserva-item-nombre {
+    .calendar-month {
+      text-align: center;
+      font-size: 16px;
       font-weight: 600;
-      color: #f0e6d0;
+      color: #d4c070;
+    }
+
+    .calendar-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .calendar-header-day {
+      text-align: center;
+      font-weight: 600;
+      color: #c8a84b;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 0;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(200, 168, 75, 0.1);
+      border-radius: 6px;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      font-size: 11px;
+    }
+
+    .calendar-day:hover {
+      border-color: #c8a84b;
+      background: rgba(200, 168, 75, 0.05);
+    }
+
+    .calendar-day.has-reservas {
+      background: rgba(80, 200, 80, 0.15);
+      border-color: #5cc85c;
+    }
+
+    .calendar-day.today {
+      background: rgba(200, 168, 75, 0.2);
+      border: 2px solid #c8a84b;
+    }
+
+    .calendar-day-number {
+      font-weight: 600;
+      color: #d4c070;
       margin-bottom: 4px;
     }
 
-    .reserva-item-motivo {
-      color: #aaa;
-      font-style: italic;
-    }
-
-    .reserva-item-horario {
-      font-size: 11px;
+    .calendar-day-indicator {
+      font-size: 10px;
       color: #888;
-      margin-top: 4px;
     }
 
     .form-panel {
@@ -304,53 +337,6 @@
       color: #e88;
     }
 
-    .status-info {
-      background: rgba(100, 150, 200, 0.15);
-      border: 1px solid rgba(100, 150, 200, 0.3);
-      color: #8ac;
-    }
-
-    /* FullCalendar */
-    .fc {
-      --fc-event-bg-color: #c8a84b;
-      --fc-event-border-color: #c8a84b;
-      --fc-event-text-color: #1a3a6b;
-    }
-
-    .fc .fc-button-primary {
-      background-color: #c8a84b;
-      border-color: #c8a84b;
-    }
-
-    .fc .fc-button-primary:hover {
-      background-color: #d4b662;
-      border-color: #d4b662;
-    }
-
-    .fc .fc-col-header-cell {
-      background-color: rgba(26, 58, 107, 0.3);
-      color: #d4c070;
-    }
-
-    .fc .fc-daygrid-day {
-      background-color: rgba(15, 32, 64, 0.3);
-    }
-
-    .fc .fc-daygrid-day.fc-day-today {
-      background-color: rgba(200, 168, 75, 0.15);
-      border: 2px solid #c8a84b;
-    }
-
-    .fc .fc-daygrid-day.selected-day {
-      background-color: rgba(220, 100, 100, 0.25) !important;
-      border: 2px solid #d86060 !important;
-    }
-
-    .fc-event-title {
-      font-size: 11px;
-      padding: 2px 4px;
-    }
-
     .required {
       color: #e88;
     }
@@ -384,27 +370,35 @@
     </header>
 
     <div class="main">
-      <div class="calendar-section">
-        <!-- Botones de espacios -->
+      <div>
         <div class="space-buttons">
           <button class="space-btn active" data-espacio="1">🏠 Altillo</button>
           <button class="space-btn" data-espacio="2">🏛 Sala de Reuniones</button>
           <button class="space-btn" data-espacio="3">🚪 Frente</button>
         </div>
 
-        <!-- Calendario -->
-        <div class="calendar-wrapper">
-          <div id="calendar"></div>
+        <div class="calendar-nav">
+          <button onclick="mesAnterior()">← Anterior</button>
+          <div class="calendar-month" id="calendarMonth"></div>
+          <button onclick="hoy()">Hoy</button>
+          <button onclick="mesSiguiente()">Siguiente →</button>
         </div>
 
-        <!-- Lista de reservas -->
-        <div class="reservas-list">
-          <h4>Reservas del día seleccionado</h4>
-          <div id="reservasList"></div>
+        <div class="calendar-header">
+          <div class="calendar-header-day">Lun</div>
+          <div class="calendar-header-day">Mar</div>
+          <div class="calendar-header-day">Mié</div>
+          <div class="calendar-header-day">Jue</div>
+          <div class="calendar-header-day">Vie</div>
+          <div class="calendar-header-day">Sáb</div>
+          <div class="calendar-header-day">Dom</div>
         </div>
+
+        <div class="calendar-grid" id="calendarGrid"></div>
+
+        <div id="reservasDelDia" style="margin-top: 20px;"></div>
       </div>
 
-      <!-- Formulario -->
       <div class="form-panel">
         <h3>Nueva Reserva</h3>
         <div id="statusMessage"></div>
@@ -452,18 +446,18 @@
 
   <script>
     const API_BASE = 'https://ceq-reservas-api.onrender.com/api';
-    let calendar;
     let espacioSeleccionado = 1;
     let diaSeleccionado = null;
     let horasSeleccionadas = [];
     let reservasActuales = [];
+    let mesCalendario = new Date();
     const espacios = { 1: 'Altillo', 2: 'Sala de Reuniones', 3: 'Frente' };
 
     async function init() {
       await cargarReservas();
-      inicializarCalendario();
       configurarBotonespacios();
       configurarFormulario();
+      actualizarCalendario();
     }
 
     async function cargarReservas() {
@@ -484,45 +478,6 @@
       } catch (error) {}
     }
 
-    function inicializarCalendario() {
-      const calendarEl = document.getElementById('calendar');
-      calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'es',
-        firstDay: 1,
-        buttonText: {
-          today: 'Hoy'
-        },
-        events: function(info, successCallback) {
-          const eventos = reservasActuales
-            .filter(r => r.espacio_id === espacioSeleccionado && r.estado === 'activa')
-            .reduce((acc, r) => {
-              // Agrupar por fecha para mostrar un solo evento por día
-              const existente = acc.find(e => e.start.startsWith(r.fecha));
-              if (!existente) {
-                acc.push({
-                  id: r.id,
-                  title: '●',
-                  start: `${r.fecha}T08:00`,
-                  extendedProps: { nombre: r.nombre_solicitante }
-                });
-              }
-              return acc;
-            }, []);
-          successCallback(eventos);
-        },
-        dateClick: function(info) {
-          document.querySelectorAll('.fc-daygrid-day').forEach(d => d.classList.remove('selected-day'));
-          info.dayEl.classList.add('selected-day');
-          diaSeleccionado = info.dateStr;
-          document.getElementById('fecha').value = info.dateStr;
-          actualizarHorasDisponibles(info.dateStr);
-          mostrarReservasDelDia(info.dateStr);
-        }
-      });
-      calendar.render();
-    }
-
     function configurarBotonespacios() {
       document.querySelectorAll('.space-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -533,12 +488,64 @@
           document.getElementById('fecha').value = '';
           document.getElementById('hoursGrid').innerHTML = '';
           document.getElementById('selectedRange').style.display = 'none';
-          document.getElementById('reservasList').innerHTML = '';
+          document.getElementById('reservasDelDia').innerHTML = '';
           diaSeleccionado = null;
           horasSeleccionadas = [];
-          calendar.refetchEvents();
+          actualizarCalendario();
         });
       });
+    }
+
+    function actualizarCalendario() {
+      const mes = mesCalendario.getMonth();
+      const año = mesCalendario.getFullYear();
+      
+      document.getElementById('calendarMonth').textContent = 
+        new Intl.DateTimeFormat('es-PY', { month: 'long', year: 'numeric' }).format(mesCalendario);
+
+      const primerDia = new Date(año, mes, 1);
+      const ultimoDia = new Date(año, mes + 1, 0);
+      const diasEnMes = ultimoDia.getDate();
+      const diaInicio = primerDia.getDay() || 7;
+
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+
+      // Espacios vacíos
+      for (let i = 1; i < diaInicio; i++) {
+        const empty = document.createElement('div');
+        grid.appendChild(empty);
+      }
+
+      // Días del mes
+      for (let dia = 1; dia <= diasEnMes; dia++) {
+        const fecha = `${año}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+        const hoy = new Date().toISOString().split('T')[0];
+
+        const reservasDia = reservasActuales.filter(r => 
+          r.fecha === fecha && r.espacio_id === espacioSeleccionado && r.estado === 'activa'
+        );
+
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        if (reservasDia.length > 0) dayEl.classList.add('has-reservas');
+        if (fecha === hoy) dayEl.classList.add('today');
+
+        dayEl.innerHTML = `
+          <div class="calendar-day-number">${dia}</div>
+          ${reservasDia.length > 0 ? `<div class="calendar-day-indicator">${reservasDia.length} reserva${reservasDia.length > 1 ? 's' : ''}</div>` : ''}
+        `;
+
+        dayEl.addEventListener('click', () => seleccionarDia(fecha));
+        grid.appendChild(dayEl);
+      }
+    }
+
+    function seleccionarDia(fecha) {
+      diaSeleccionado = fecha;
+      document.getElementById('fecha').value = fecha;
+      actualizarHorasDisponibles(fecha);
+      mostrarReservasDelDia(fecha);
     }
 
     function actualizarHorasDisponibles(fecha) {
@@ -648,26 +655,33 @@
     }
 
     function mostrarReservasDelDia(fecha) {
-      const lista = document.getElementById('reservasList');
-      const reservasDelDia = reservasActuales.filter(r =>
+      let reservas = reservasActuales.filter(r =>
         r.espacio_id === espacioSeleccionado && r.fecha === fecha && r.estado === 'activa'
       );
 
-      if (reservasDelDia.length === 0) {
-        lista.innerHTML = '<div style="color: #666; text-align: center; padding: 20px;">Sin reservas para este día</div>';
+      const div = document.getElementById('reservasDelDia');
+      if (reservas.length === 0) {
+        div.innerHTML = '';
         return;
       }
 
-      lista.innerHTML = reservasDelDia.map(r => {
-        const horaInicio = r.hora_inicio.substring(0, 5);
-        const horaFin = r.hora_fin.substring(0, 5);
-        return `
-        <div class="reserva-item">
-          <div class="reserva-item-nombre">${r.nombre_solicitante}</div>
-          <div class="reserva-item-motivo">${r.motivo || 'Sin motivo especificado'}</div>
-          <div class="reserva-item-horario">${horaInicio} - ${horaFin}</div>
+      div.innerHTML = `
+        <h4 style="margin-bottom: 12px; color: #d4c070;">Reservas del ${fecha}</h4>
+        <div style="display: grid; gap: 12px;">
+          ${reservas.map(r => {
+            const horaInicio = r.hora_inicio.substring(0, 5);
+            const horaFin = r.hora_fin.substring(0, 5);
+            return `
+            <div style="background: rgba(200,168,75,0.1); border: 1px solid rgba(200,168,75,0.2); border-radius: 6px; padding: 12px;">
+              <div style="margin-bottom: 8px;">
+                <strong>${r.nombre_solicitante}</strong><br>
+                <span style="font-size: 11px; color: #888;">${horaInicio} - ${horaFin}</span><br>
+                <em style="font-size: 11px; color: #aaa;">${r.motivo || '-'}</em>
+              </div>
+            </div>
+          `}).join('')}
         </div>
-      `}).join('');
+      `;
     }
 
     function configurarFormulario() {
@@ -704,21 +718,13 @@
         return;
       }
 
-      if (!motivo) {
-        mostrarError('El motivo es obligatorio');
-        return;
-      }
-
       try {
-        // Calcular hora_fin basado en las horas seleccionadas
+        // Calcular hora_fin
         const [horaInicio] = horasSeleccionadas[0].split(':');
         const [horaFin] = horasSeleccionadas[horasSeleccionadas.length - 1].split(':');
         const minuto = horasSeleccionadas[0].split(':')[1];
-        
-        // hora_fin es la hora siguiente a la última hora seleccionada
         const horaFinCalculada = String(parseInt(horaFin) + 1).padStart(2, '0') + ':' + minuto;
 
-        // Crear una SOLA reserva (no múltiples)
         const res = await fetch(`${API_BASE}/reservas`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -752,7 +758,7 @@
         horasSeleccionadas = [];
 
         await cargarReservas();
-        calendar.refetchEvents();
+        actualizarCalendario();
       } catch (error) {
         mostrarError('Error al crear la reserva');
       }
@@ -770,6 +776,21 @@
       div.className = 'status-message status-success';
       div.textContent = '✓ ' + msg;
       setTimeout(() => div.innerHTML = '', 5000);
+    }
+
+    function mesAnterior() {
+      mesCalendario.setMonth(mesCalendario.getMonth() - 1);
+      actualizarCalendario();
+    }
+
+    function mesSiguiente() {
+      mesCalendario.setMonth(mesCalendario.getMonth() + 1);
+      actualizarCalendario();
+    }
+
+    function hoy() {
+      mesCalendario = new Date();
+      actualizarCalendario();
     }
 
     init();
