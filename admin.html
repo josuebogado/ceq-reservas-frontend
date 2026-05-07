@@ -579,6 +579,39 @@
         margin: 20px;
         padding: 16px;
       }
+
+      .calendar-grid {
+        gap: 4px;
+      }
+
+      .calendar-day {
+        min-height: 45px;
+        padding: 4px;
+        font-size: 8px;
+        aspect-ratio: 1;
+      }
+
+      .calendar-day-number {
+        font-size: 10px;
+        margin-bottom: 2px;
+      }
+
+      .calendar-day-indicator {
+        font-size: 7px;
+      }
+
+      .calendar-header-day {
+        font-size: 8px;
+      }
+
+      .calendar-month {
+        font-size: 12px;
+      }
+
+      .calendar-nav button {
+        padding: 6px;
+        font-size: 10px;
+      }
     }
 
     /* VIEW TOGGLE */
@@ -630,6 +663,7 @@
       display: flex;
       flex-direction: column;
       font-size: 11px;
+      min-height: 60px;
     }
 
     .calendar-day:hover {
@@ -645,6 +679,11 @@
     .calendar-day.today {
       background: rgba(200, 168, 75, 0.2);
       border: 2px solid #c8a84b;
+    }
+
+    .calendar-day.selected-day {
+      background: rgba(220, 100, 100, 0.25);
+      border: 2px solid #d86060;
     }
 
     .calendar-day-number {
@@ -680,16 +719,21 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .calendar-nav button {
-      padding: 8px 12px;
+      padding: 10px 16px;
       background: rgba(200, 168, 75, 0.1);
       border: 1px solid rgba(200, 168, 75, 0.3);
       color: #d4c070;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 11px;
+      font-size: 12px;
+      font-weight: 600;
+      flex: 1;
+      min-width: 100px;
     }
 
     .calendar-nav button:hover {
@@ -702,6 +746,7 @@
       font-size: 16px;
       font-weight: 600;
       color: #d4c070;
+      flex: 1;
     }
   </style>
 </head>
@@ -1288,14 +1333,31 @@
       let reservas = reservasActuales.filter(r => r.fecha === fecha);
       if (espacio) reservas = reservas.filter(r => r.espacio_id == espacio);
 
+      // Marcar día seleccionado
+      document.querySelectorAll('.calendar-day.selected-day').forEach(d => d.classList.remove('selected-day'));
+      const dias = document.querySelectorAll('.calendar-day');
+      dias.forEach(d => {
+        const diaNum = d.querySelector('.calendar-day-number').textContent.trim();
+        if (diaNum === fecha.split('-')[2]) {
+          d.classList.add('selected-day');
+        }
+      });
+
       const div = document.getElementById('reservasDelDiaCalendario');
       if (reservas.length === 0) {
-        div.innerHTML = `<p style="color: #666; text-align: center;">Sin reservas para ${fecha}</p>`;
+        // Convertir fecha YYYY-MM-DD a DD/MM/YYYY
+        const [año, mes, día] = fecha.split('-');
+        const fechaFormato = `${día}/${mes}/${año}`;
+        div.innerHTML = `<p style="color: #666; text-align: center;">Sin reservas para ${fechaFormato}</p>`;
         return;
       }
 
+      // Convertir fecha YYYY-MM-DD a DD/MM/YYYY
+      const [año, mes, día] = fecha.split('-');
+      const fechaFormato = `${día}/${mes}/${año}`;
+
       div.innerHTML = `
-        <h4 style="margin-bottom: 12px; color: #d4c070;">Reservas del ${fecha}</h4>
+        <h4 style="margin-bottom: 12px; color: #d4c070;">Reservas del ${fechaFormato}</h4>
         <div style="display: grid; gap: 12px;">
           ${reservas.map(r => `
             <div style="background: rgba(200,168,75,0.1); border: 1px solid rgba(200,168,75,0.2); border-radius: 6px; padding: 12px;">
