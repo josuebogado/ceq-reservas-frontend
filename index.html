@@ -606,7 +606,7 @@
 
         <div class="form-group">
           <label for="celular">Celular <span class="required">*</span></label>
-          <input type="tel" id="celular" placeholder="Ej: +595 123 456789" required>
+          <input type="tel" id="celular" inputmode="numeric" pattern="[0-9+\s-]*" placeholder="Ej: +595 123 456789" required>
         </div>
 
         <div class="form-group">
@@ -704,6 +704,9 @@
       for (let dia = 1; dia <= diasEnMes; dia++) {
         const fecha = `${año}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
 
+        const fechaObj = new Date(año, mes, dia);
+        const esFinDeSemana = fechaObj.getDay() === 0 || fechaObj.getDay() === 6;
+
         const reservasDia = reservasActuales.filter(r => 
           r.fecha === fecha && r.espacio_id === espacioSeleccionado && r.estado === 'activa'
         );
@@ -711,19 +714,19 @@
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day';
         
-        // Deshabilitar días pasados
+        // Deshabilitar días pasados y fin de semana
         const esPasado = fecha < hoyStr;
         
         if (reservasDia.length > 0) dayEl.classList.add('has-reservas');
         if (fecha === hoyStr) dayEl.classList.add('today');
-        if (esPasado) dayEl.classList.add('disabled');
+        if (esPasado || esFinDeSemana) dayEl.classList.add('disabled');
 
         dayEl.innerHTML = `
           <div class="calendar-day-number">${dia}</div>
           ${reservasDia.length > 0 ? `<div class="calendar-day-indicator">${reservasDia.length} reserva${reservasDia.length > 1 ? 's' : ''}</div>` : ''}
         `;
 
-        if (!esPasado) {
+        if (!esPasado && !esFinDeSemana) {
           dayEl.addEventListener('click', () => seleccionarDia(fecha));
         }
         grid.appendChild(dayEl);
@@ -869,8 +872,12 @@
         return;
       }
 
+      // Convertir fecha YYYY-MM-DD a DD/MM/YYYY
+      const [año, mes, día] = fecha.split('-');
+      const fechaFormato = `${día}/${mes}/${año}`;
+
       div.innerHTML = `
-        <h4 style="margin-bottom: 12px; color: #d4c070;">Reservas del ${fecha}</h4>
+        <h4 style="margin-bottom: 12px; color: #d4c070;">Reservas del ${fechaFormato}</h4>
         <div style="display: grid; gap: 12px;">
           ${reservas.map(r => {
             const horaInicio = r.hora_inicio.substring(0, 5);
