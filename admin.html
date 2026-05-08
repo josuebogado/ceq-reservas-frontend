@@ -1071,7 +1071,7 @@
           <td>${r.nombre_solicitante}</td>
           <td>${celular}</td>
           <td>${email}</td>
-          <td>${r.motivo || '-'}</td>
+          <td>${r.motivo ? r.motivo.trim() : '-'}</td>
           <td><span class="status-badge status-${r.estado}">${r.estado}</span></td>
           <td>
             ${r.estado === 'activa' ? `<button class="btn-small btn-cancel" onclick="abrirCancelacion(${r.id})">Cancelar</button>` : '-'}
@@ -1246,7 +1246,7 @@
               'Nombre': r.nombre_solicitante,
               'Celular': celular,
               'Email': email,
-              'Motivo': r.motivo || '-',
+              'Motivo': r.motivo ? r.motivo.trim() : 'Sin especificar',
               'Estado': r.estado
             };
           });
@@ -1375,7 +1375,7 @@
                 <div><strong>Espacio:</strong> ${espacios[r.espacio_id]}</div>
                 <div><strong>Celular:</strong> ${celular}</div>
                 <div><strong>Email:</strong> ${email}</div>
-                <div><strong>Motivo:</strong> ${r.motivo && r.motivo.trim() ? r.motivo : 'Sin especificar'}</div>
+                <div><strong>Motivo:</strong> ${r.motivo ? r.motivo.trim() : 'Sin especificar'}</div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
                   <span><strong>Estado:</strong> <span class="status-badge status-${r.estado}">${r.estado}</span></span>
                   ${r.estado === 'activa' ? `<button class="btn-small btn-cancel" onclick="abrirCancelacion(${r.id})">Cancelar</button>` : ''}
