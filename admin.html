@@ -1365,19 +1365,24 @@
       div.innerHTML = `
         <h4 style="margin-bottom: 12px; color: #d4c070;">Reservas del ${fechaFormato}</h4>
         <div style="display: grid; gap: 12px;">
-          ${reservas.map(r => `
+          ${reservas.map(r => {
+            const [celular, email] = r.contacto.split('|').map(c => c.trim());
+            return `
             <div style="background: rgba(200,168,75,0.1); border: 1px solid rgba(200,168,75,0.2); border-radius: 6px; padding: 12px;">
-              <div style="display: flex; justify-content: space-between; align-items: start;">
-                <div>
-                  <strong>${r.nombre_solicitante}</strong><br>
-                  <span style="font-size: 11px; color: #888;">${r.hora_inicio.substring(0,5)} - ${r.hora_fin.substring(0,5)}</span><br>
-                  <span style="font-size: 10px; color: #aaa;">${espacios[r.espacio_id]}</span><br>
-                  <em style="font-size: 11px; color: #aaa;">${r.motivo || '-'}</em>
+              <div style="display: grid; gap: 6px; font-size: 11px;">
+                <div><strong>Nombre:</strong> ${r.nombre_solicitante}</div>
+                <div><strong>Horario:</strong> ${r.hora_inicio.substring(0,5)} - ${r.hora_fin.substring(0,5)}</div>
+                <div><strong>Espacio:</strong> ${espacios[r.espacio_id]}</div>
+                <div><strong>Celular:</strong> ${celular}</div>
+                <div><strong>Email:</strong> ${email}</div>
+                <div><strong>Motivo:</strong> ${r.motivo && r.motivo.trim() ? r.motivo : 'Sin especificar'}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                  <span><strong>Estado:</strong> <span class="status-badge status-${r.estado}">${r.estado}</span></span>
+                  ${r.estado === 'activa' ? `<button class="btn-small btn-cancel" onclick="abrirCancelacion(${r.id})">Cancelar</button>` : ''}
                 </div>
-                ${r.estado === 'activa' ? `<button class="btn-small btn-cancel" onclick="abrirCancelacion(${r.id})">Cancelar</button>` : `<span class="status-badge status-${r.estado}">${r.estado}</span>`}
               </div>
             </div>
-          `).join('')}
+          `}).join('')}
         </div>
       `;
     }
