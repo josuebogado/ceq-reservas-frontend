@@ -853,26 +853,32 @@
               </select>
             </div>
 
-            <div class="calendar-nav">
-              <button onclick="mesAnterior()">← Anterior</button>
-              <div class="calendar-month" id="calendarMonth"></div>
-              <button onclick="hoy()">Hoy</button>
-              <button onclick="mesSiguiente()">Siguiente →</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <!-- CALENDARIO -->
+              <div>
+                <div class="calendar-nav">
+                  <button onclick="mesAnterior()">← Anterior</button>
+                  <div class="calendar-month" id="calendarMonth"></div>
+                  <button onclick="hoy()">Hoy</button>
+                  <button onclick="mesSiguiente()">Siguiente →</button>
+                </div>
+
+                <div class="calendar-header">
+                  <div class="calendar-header-day">Lun</div>
+                  <div class="calendar-header-day">Mar</div>
+                  <div class="calendar-header-day">Mié</div>
+                  <div class="calendar-header-day">Jue</div>
+                  <div class="calendar-header-day">Vie</div>
+                  <div class="calendar-header-day">Sáb</div>
+                  <div class="calendar-header-day">Dom</div>
+                </div>
+
+                <div class="calendar-grid" id="calendarGrid"></div>
+              </div>
+
+              <!-- DETALLES DE RESERVAS -->
+              <div id="reservasDelDiaCalendario"></div>
             </div>
-
-            <div class="calendar-header">
-              <div class="calendar-header-day">Lun</div>
-              <div class="calendar-header-day">Mar</div>
-              <div class="calendar-header-day">Mié</div>
-              <div class="calendar-header-day">Jue</div>
-              <div class="calendar-header-day">Vie</div>
-              <div class="calendar-header-day">Sáb</div>
-              <div class="calendar-header-day">Dom</div>
-            </div>
-
-            <div class="calendar-grid" id="calendarGrid"></div>
-
-            <div id="reservasDelDiaCalendario" style="margin-top: 20px;"></div>
           </div>
         </div>
 
