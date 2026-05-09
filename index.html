@@ -188,6 +188,21 @@
       background: rgba(200, 168, 75, 0.05);
     }
 
+    .calendar-day.available {
+      background: rgba(80, 200, 80, 0.15);
+      border-color: rgba(80, 200, 80, 0.4);
+    }
+
+    .calendar-day.partially-booked {
+      background: rgba(255, 200, 80, 0.15);
+      border-color: rgba(255, 200, 80, 0.4);
+    }
+
+    .calendar-day.fully-booked {
+      background: rgba(220, 100, 100, 0.15);
+      border-color: rgba(220, 100, 100, 0.4);
+    }
+
     .calendar-day.has-reservas {
       background: rgba(80, 200, 80, 0.15);
       border-color: #5cc85c;
@@ -543,8 +558,8 @@
   <div class="container">
     <header>
       <div>
-        <h1>Centro de Estudiantes de Química - Reservas de Espacios</h1>
-        <p style="font-size: 11px; color: rgba(255, 255, 255, 0.5); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase;">Prueba Piloto</p>
+        <h1>Centro de Estudiantes de Química — Reservas de Espacios</h1>
+        <p style="font-size: 11px; color: rgba(255, 255, 255, 0.5); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase;">🧪 Prueba Piloto — Versión 1.2a</p>
       </div>
       <div class="header-buttons">
         <div class="badge" id="stats">Cargando...</div>
@@ -555,9 +570,9 @@
     <div class="main">
       <div>
         <div class="space-buttons">
-          <button class="space-btn active" data-espacio="1"> Altillo</button>
-          <button class="space-btn" data-espacio="2"> Sala de Reuniones</button>
-          <button class="space-btn" data-espacio="3"> Frente</button>
+          <button class="space-btn active" data-espacio="1">🏠 Altillo</button>
+          <button class="space-btn" data-espacio="2">🏛 Sala de Reuniones</button>
+          <button class="space-btn" data-espacio="3">🚪 Frente</button>
         </div>
 
         <div class="calendar-nav">
@@ -629,6 +644,10 @@
 
   <!-- FOOTER -->
   <footer style="text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid rgba(200, 168, 75, 0.1); color: rgba(255, 255, 255, 0.5); font-size: 11px;">
+    <button onclick="irACancelar()" style="background: none; border: none; color: #d4c070; cursor: pointer; text-decoration: none; transition: color 0.2s; font-size: 11px;">
+      ❌ Cancelar Reserva
+    </button>
+    <span style="margin: 0 8px;">•</span>
     <button onclick="abrirReporteErrores()" style="background: none; border: none; color: #d4c070; cursor: pointer; text-decoration: none; transition: color 0.2s; font-size: 11px;">
       🐛 Reportar errores
     </button>
@@ -683,21 +702,81 @@
     }
 
     function configurarBotonespacios() {
-      document.querySelectorAll('.space-btn').forEach(btn => {
+      document.querySelectorAll('.space-btn[data-espacio]').forEach(btn => {
         btn.addEventListener('click', () => {
-          document.querySelectorAll('.space-btn').forEach(b => b.classList.remove('active'));
+          const espacio = parseInt(btn.dataset.espacio);
+          
+          // Limpiar selecciones
+          document.querySelectorAll('.space-btn[data-espacio]').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-          espacioSeleccionado = parseInt(btn.dataset.espacio);
-          document.getElementById('espacioNombre').value = espacios[espacioSeleccionado];
+          
+          espacioSeleccionado = espacio;
+          document.getElementById('espacioNombre').value = espacio === 1 ? 'Altillo' : espacio === 2 ? 'Sala de Reuniones' : 'Frente';
           document.getElementById('fecha').value = '';
-          document.getElementById('hoursGrid').innerHTML = '';
+          document.getElementById('hoursGrid').innerHTML = ''; // Limpiar horarios
           document.getElementById('selectedRange').style.display = 'none';
           document.getElementById('reservasDelDia').innerHTML = '';
           diaSeleccionado = null;
           horasSeleccionadas = [];
+          
           actualizarCalendario();
         });
       });
+    }
+
+    function seleccionarDia(fecha) {
+      // Verificar que hay espacio seleccionado
+      if (!espacioSeleccionado) {
+        mostrarError('Selecciona un espacio primero');
+        return;
+      }
+
+      // Limpiar selección anterior
+      document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
+      
+      // Marcar nuevo día seleccionado
+      const [año, mes, día] = fecha.split('-');
+      const diaNum = parseInt(día);
+      
+      const dias = document.querySelectorAll('.calendar-day');
+      dias.forEach(d => {
+        const textContent = d.querySelector('.calendar-day-number').textContent.trim();
+        if (parseInt(textContent) === diaNum) {
+          d.classList.add('selected');
+        }
+      });
+
+      diaSeleccionado = fecha;
+      document.getElementById('fecha').value = fecha;
+      
+      // Mostrar horarios SOLO después de seleccionar día
+      if (espacioSeleccionado === 3) {
+        // Para Frente: mostrar 3 botones
+        document.getElementById('hoursGrid').innerHTML = `
+          <button class="space-btn" style="width: 100%; padding: 12px; margin-bottom: 8px;" onclick="seleccionarFrente(this, '07:00', '10:00')">🌅 Desayuno (07:00-10:00)</button>
+          <button class="space-btn" style="width: 100%; padding: 12px; margin-bottom: 8px;" onclick="seleccionarFrente(this, '10:00', '13:00')">☀️ Almuerzo (10:00-13:00)</button>
+          <button class="space-btn" style="width: 100%; padding: 12px;" onclick="seleccionarFrente(this, '14:00', '18:00')">🌆 Merienda (14:00-18:00)</button>
+        `;
+        document.getElementById('selectedRange').style.display = 'none';
+      } else {
+        // Para Altillo o Sala: mostrar horas individuales
+        actualizarHorasDisponibles(fecha);
+      }
+      
+      mostrarReservasDelDia(fecha);
+    }
+
+    function seleccionarFrente(btn, horaInicio, horaFin) {
+      // Marcar como activo
+      document.querySelectorAll('#hoursGrid .space-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // Guardar datos de Frente
+      horasSeleccionadas = [horaInicio, horaFin];
+      
+      // Mostrar horario seleccionado
+      document.getElementById('selectedRange').style.display = 'block';
+      document.getElementById('selectedRange').innerHTML = `<strong>${horaInicio} - ${horaFin}</strong>`;
     }
 
     function actualizarCalendario() {
@@ -721,62 +800,77 @@
         grid.appendChild(empty);
       }
 
-      // Días del mes
+      // Días del mes + primera semana del siguiente
       const hoy = new Date();
       const hoyStr = hoy.toISOString().split('T')[0];
+      
+      let diasMostrados = 0;
+      const maxDias = diasEnMes + 7; // mes actual + hasta 7 días del siguiente
 
-      for (let dia = 1; dia <= diasEnMes; dia++) {
+      for (let dia = 1; diasMostrados < maxDias; dia++) {
+        // Si pasamos los días del mes actual, cambiar a mes siguiente
+        if (dia > diasEnMes) {
+          if (diasMostrados - diasEnMes >= 7) break; // Solo primera semana del siguiente
+          const fechaObj = new Date(año, mes + 1, dia - diasEnMes);
+          const fechaSiguiente = `${año}-${String(mes + 2).padStart(2, '0')}-${String(dia - diasEnMes).padStart(2, '0')}`;
+          dia = dia - diasEnMes;
+          
+          // Crear elemento para mes siguiente
+          const dayEl = document.createElement('div');
+          dayEl.className = 'calendar-day disabled';
+          dayEl.innerHTML = `<div class="calendar-day-number">${dia}</div>`;
+          grid.appendChild(dayEl);
+          diasMostrados++;
+          continue;
+        }
+
         const fecha = `${año}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-
         const fechaObj = new Date(año, mes, dia);
         const esFinDeSemana = fechaObj.getDay() === 0 || fechaObj.getDay() === 6;
+        const esPasado = fecha < hoyStr;
 
         const reservasDia = reservasActuales.filter(r => 
           r.fecha === fecha && r.espacio_id === espacioSeleccionado && r.estado === 'activa'
         );
 
+        // Calcular disponibilidad (0-24 horas)
+        const horasOcupadas = new Set();
+        reservasDia.forEach(r => {
+          const horaI = parseInt(r.hora_inicio.split(':')[0]);
+          const horaF = parseInt(r.hora_fin.split(':')[0]);
+          for (let h = horaI; h < horaF; h++) {
+            horasOcupadas.add(h);
+          }
+        });
+        const horasDisponibles = 10 - horasOcupadas.size; // 10 horas posibles (08:00-18:00)
+
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day';
         
-        // Deshabilitar días pasados y fin de semana
-        const esPasado = fecha < hoyStr;
-        
-        if (reservasDia.length > 0) dayEl.classList.add('has-reservas');
+        // Agregar clase de color según disponibilidad
+        if (esPasado || esFinDeSemana) {
+          dayEl.classList.add('disabled');
+        } else if (horasDisponibles === 0) {
+          dayEl.classList.add('fully-booked'); // ROJO - sin disponibilidad
+        } else if (horasDisponibles < 5) {
+          dayEl.classList.add('partially-booked'); // AMARILLO - parcialmente disponible
+        } else {
+          dayEl.classList.add('available'); // VERDE - disponible
+        }
+
         if (fecha === hoyStr) dayEl.classList.add('today');
-        if (esPasado || esFinDeSemana) dayEl.classList.add('disabled');
 
         dayEl.innerHTML = `
           <div class="calendar-day-number">${dia}</div>
-          ${reservasDia.length > 0 ? `<div class="calendar-day-indicator">${reservasDia.length} reserva${reservasDia.length > 1 ? 's' : ''}</div>` : ''}
+          ${reservasDia.length > 0 ? `<div class="calendar-day-indicator">${reservasDia.length}</div>` : ''}
         `;
 
         if (!esPasado && !esFinDeSemana) {
           dayEl.addEventListener('click', () => seleccionarDia(fecha));
         }
         grid.appendChild(dayEl);
+        diasMostrados++;
       }
-    }
-
-    function seleccionarDia(fecha) {
-      // Limpiar selección anterior
-      document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
-      
-      // Marcar nuevo día seleccionado
-      const [año, mes, día] = fecha.split('-');
-      const diaNum = parseInt(día);
-      
-      const dias = document.querySelectorAll('.calendar-day');
-      dias.forEach(d => {
-        const textContent = d.querySelector('.calendar-day-number').textContent.trim();
-        if (parseInt(textContent) === diaNum) {
-          d.classList.add('selected');
-        }
-      });
-
-      diaSeleccionado = fecha;
-      document.getElementById('fecha').value = fecha;
-      actualizarHorasDisponibles(fecha);
-      mostrarReservasDelDia(fecha);
     }
 
     function actualizarHorasDisponibles(fecha) {
@@ -954,11 +1048,21 @@
       }
 
       try {
-        // Calcular hora_fin
-        const [horaInicio] = horasSeleccionadas[0].split(':');
-        const [horaFin] = horasSeleccionadas[horasSeleccionadas.length - 1].split(':');
-        const minuto = horasSeleccionadas[0].split(':')[1];
-        const horaFinCalculada = String(parseInt(horaFin) + 1).padStart(2, '0') + ':' + minuto;
+        // Para Frente, horasSeleccionadas ya tiene [inicio, fin]
+        let horaInicio, horaFin;
+        
+        if (espacioSeleccionado === 3 && horasSeleccionadas.length === 2) {
+          // Frente: usar directamente
+          horaInicio = horasSeleccionadas[0];
+          horaFin = horasSeleccionadas[1];
+        } else {
+          // Altillo o Sala: calcular desde horas individuales
+          horaInicio = horasSeleccionadas[0];
+          const [horaI] = horaInicio.split(':');
+          const [horaU] = horasSeleccionadas[horasSeleccionadas.length - 1].split(':');
+          const minuto = horaInicio.split(':')[1];
+          horaFin = String(parseInt(horaU) + 1).padStart(2, '0') + ':' + minuto;
+        }
 
         const res = await fetch(`${API_BASE}/reservas`, {
           method: 'POST',
@@ -968,8 +1072,8 @@
             nombre_solicitante: nombre,
             contacto: `${celular} | ${email}`,
             fecha: diaSeleccionado,
-            hora_inicio: horasSeleccionadas[0],
-            hora_fin: horaFinCalculada,
+            hora_inicio: horaInicio,
+            hora_fin: horaFin,
             motivo: motivo
           })
         });
@@ -980,7 +1084,11 @@
           return;
         }
 
-        mostrarExito(`Reserva creada: ${horasSeleccionadas[0]} - ${horaFinCalculada}`);
+        // Mostrar modal con código de cancelación
+        document.getElementById('codigoTexto').textContent = data.codigo || 'RES-ERROR';
+        document.getElementById('modalCodigo').style.display = 'flex';
+
+        mostrarExito(`Reserva creada: ${horaInicio} - ${horaFin}`);
         
         document.getElementById('nombre').value = '';
         document.getElementById('celular').value = '';
@@ -1029,6 +1137,26 @@
     }
 
     // REPORTAR ERRORES
+    function irACancelar() {
+      const codigo = prompt('¿Olvidaste tu código?\n\nContacta al moderador por WhatsApp:');
+      if (!codigo) return;
+      
+      window.location.href = 'https://ceq-reservas-frontend.vercel.app/cancelar.html';
+    }
+
+    function copiarCodigo() {
+      const codigo = document.getElementById('codigoTexto').textContent;
+      navigator.clipboard.writeText(codigo).then(() => {
+        alert('✓ Código copiado al portapapeles');
+      }).catch(() => {
+        alert('Error al copiar');
+      });
+    }
+
+    function cerrarModalCodigo() {
+      document.getElementById('modalCodigo').style.display = 'none';
+    }
+
     function abrirReporteErrores() {
       document.getElementById('modalReporte').style.display = 'flex';
     }
