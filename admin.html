@@ -777,6 +777,7 @@
           <button class="tab-btn active" onclick="switchTab('reservas')">📋 Reservas</button>
           <button class="tab-btn" onclick="switchTab('bloqueos')">🔒 Bloqueos</button>
           <button class="tab-btn" onclick="switchTab('exportar')">📊 Exportar</button>
+          <button class="tab-btn" onclick="switchTab('reportes')">🐛 Reportes</button>
         </div>
 
         <!-- TAB: RESERVAS -->
@@ -956,6 +957,26 @@
     </div>
   </div>
 
+  <!-- TAB: REPORTES -->
+  <div id="tab-reportes" class="tab-content" style="display: none;">
+    <h3 style="margin-bottom: 20px;">Reportes de Errores</h3>
+    
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Mensaje</th>
+            <th>URL</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="reportesTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- MODAL CANCELACIÓN -->
   <div class="modal" id="modalCancelar">
     <div class="modal-content">
@@ -1032,6 +1053,7 @@
         actualizarEstadisticas();
         mostrarReservas(reservasActuales);
         cargarBloqueos();
+        cargarReportes();
       } catch (error) {
         console.error('Error:', error);
       }
@@ -1402,7 +1424,44 @@
       actualizarCalendario();
     }
 
-    // Permitir login con Enter
+    // REPORTES
+    async function cargarReportes() {
+      try {
+        const res = await fetch(`${API_BASE}/admin/reportes`);
+        const reportes = await res.json();
+        mostrarReportes(reportes);
+      } catch (error) {
+        console.error('Error cargando reportes:', error);
+      }
+    }
+
+    function mostrarReportes(reportes) {
+      const tbody = document.getElementById('reportesTableBody');
+      if (!tbody) return;
+      
+      tbody.innerHTML = reportes.map(r => {
+        const [año, mes, día] = r.created_at.split('T')[0].split('-');
+        const fecha = `${día}/${mes}/${año}`;
+        const hora = r.created_at.split('T')[1].substring(0, 5);
+        return `
+        <tr>
+          <td>${fecha} ${hora}</td>
+          <td style="max-width: 300px; word-break: break-word;">${r.mensaje}</td>
+          <td style="font-size: 10px; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${r.url || '-'}</td>
+          <td><span class="status-badge ${r.leido ? 'status-cancelada' : 'status-activa'}">${r.leido ? 'Leído' : 'Nuevo'}</span></td>
+          <td>${!r.leido ? `<button class="btn-small" onclick="marcarLeido(${r.id})">Marcar leído</button>` : '-'}</td>
+        </tr>
+      `}).join('');
+    }
+
+    async function marcarLeido(id) {
+      try {
+        await fetch(`${API_BASE}/admin/reportes/${id}/leer`, { method: 'POST' });
+        cargarReportes();
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
     document.addEventListener('keypress', function(e) {
       if (e.key === 'Enter' && document.getElementById('loginOverlay').style.display !== 'none') {
         login();
