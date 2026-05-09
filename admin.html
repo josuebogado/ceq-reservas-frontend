@@ -203,7 +203,7 @@
     }
 
     .tab-content.active {
-      display: block;
+      display: block !important;
     }
 
     .filters {
@@ -954,30 +954,30 @@
           <p style="margin-top: 16px; font-size: 12px; color: #888;">Cada día será una hoja separada en el archivo Excel.</p>
         </div>
       </div>
+
+      <!-- TAB: REPORTES -->
+      <div id="tab-reportes" class="tab-content" style="display: none;">
+        <h3 style="margin-bottom: 20px;">Reportes de Errores</h3>
+        
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Mensaje</th>
+                <th>URL</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="reportesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- TAB: REPORTES -->
-  <div id="tab-reportes" class="tab-content" style="display: none;">
-    <h3 style="margin-bottom: 20px;">Reportes de Errores</h3>
-    
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Mensaje</th>
-            <th>URL</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="reportesTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- MODAL CANCELACIÓN -->
   <div class="modal" id="modalCancelar">
     <div class="modal-content">
       <h3>Cancelar Reserva</h3>
