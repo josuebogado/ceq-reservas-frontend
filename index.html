@@ -669,11 +669,11 @@
 
   <script>
     const API_BASE = 'https://ceq-reservas-api.onrender.com/api';
-    window.espacioSeleccionado = 1;
-    window.diaSeleccionado = null;
-    window.horasSeleccionadas = [];
-    window.reservasActuales = [];
-    window.mesCalendario = new Date();
+    let espacioSeleccionado = 1;
+    let diaSeleccionado = null;
+    let horasSeleccionadas = [];
+    let reservasActuales = [];
+    let mesCalendario = new Date();
     const espacios = { 1: 'Altillo', 2: 'Sala de Reuniones', 3: 'Frente' };
 
     async function init() {
@@ -710,14 +710,14 @@
           document.querySelectorAll('.space-btn[data-espacio]').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           
-          window.espacioSeleccionado = espacio;
+          espacioSeleccionado = espacio;
           document.getElementById('espacioNombre').value = espacio === 1 ? 'Altillo' : espacio === 2 ? 'Sala de Reuniones' : 'Frente';
           document.getElementById('fecha').value = '';
           document.getElementById('hoursGrid').innerHTML = ''; // Limpiar horarios
           document.getElementById('selectedRange').style.display = 'none';
           document.getElementById('reservasDelDia').innerHTML = '';
-          window.diaSeleccionado = null;
-          window.horasSeleccionadas = [];
+          diaSeleccionado = null;
+          horasSeleccionadas = [];
           
           actualizarCalendario();
         });
@@ -746,11 +746,11 @@
         }
       });
 
-      window.diaSeleccionado = fecha;
+      diaSeleccionado = fecha;
       document.getElementById('fecha').value = fecha;
       
       // Mostrar horarios SOLO después de seleccionar día
-      if (window.espacioSeleccionado === 3) {
+      if (espacioSeleccionado === 3) {
         // Para Frente: mostrar 3 botones
         document.getElementById('hoursGrid').innerHTML = `
           <button class="space-btn" style="width: 100%; padding: 12px; margin-bottom: 8px;" onclick="seleccionarFrente(this, '07:00', '10:00')">🌅 Desayuno (07:00-10:00)</button>
@@ -772,7 +772,7 @@
       btn.classList.add('active');
       
       // Guardar datos de Frente
-      window.horasSeleccionadas = [horaInicio, horaFin];
+      horasSeleccionadas = [horaInicio, horaFin];
       
       // Mostrar horario seleccionado
       document.getElementById('selectedRange').style.display = 'block';
@@ -1042,7 +1042,7 @@
       const email = document.getElementById('email').value.trim();
       const motivo = document.getElementById('motivo').value.trim();
 
-      if (window.horasSeleccionadas.length === 0) {
+      if (horasSeleccionadas.length === 0) {
         mostrarError('Selecciona al menos 1 hora');
         return;
       }
@@ -1051,7 +1051,7 @@
         // Para Frente, horasSeleccionadas ya tiene [inicio, fin]
         let horaInicio, horaFin;
         
-        if (window.espacioSeleccionado === 3 && window.horasSeleccionadas.length === 2) {
+        if (espacioSeleccionado === 3 && horasSeleccionadas.length === 2) {
           // Frente: usar directamente
           horaInicio = horasSeleccionadas[0];
           horaFin = horasSeleccionadas[1];
