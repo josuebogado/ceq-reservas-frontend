@@ -188,21 +188,6 @@
       background: rgba(200, 168, 75, 0.05);
     }
 
-    .calendar-day.available {
-      background: rgba(80, 200, 80, 0.15);
-      border-color: rgba(80, 200, 80, 0.4);
-    }
-
-    .calendar-day.partially-booked {
-      background: rgba(255, 200, 80, 0.15);
-      border-color: rgba(255, 200, 80, 0.4);
-    }
-
-    .calendar-day.fully-booked {
-      background: rgba(220, 100, 100, 0.15);
-      border-color: rgba(220, 100, 100, 0.4);
-    }
-
     .calendar-day.has-reservas {
       background: rgba(80, 200, 80, 0.15);
       border-color: #5cc85c;
@@ -557,10 +542,7 @@
 <body>
   <div class="container">
     <header>
-      <div>
-        <h1>Centro de Estudiantes de Química — Reservas de Espacios</h1>
-        <p style="font-size: 11px; color: rgba(255, 255, 255, 0.5); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase;">🧪 Prueba Piloto — Versión 1.2a</p>
-      </div>
+      <h1>Centro de Estudiantes de Química — Reservas de Espacios</h1>
       <div class="header-buttons">
         <div class="badge" id="stats">Cargando...</div>
         <a href="https://ceq-reservas-frontend.vercel.app/admin.html" class="admin-link">🔐 Admin</a>
@@ -642,31 +624,6 @@
     </div>
   </div>
 
-  <!-- FOOTER -->
-  <footer style="text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid rgba(200, 168, 75, 0.1); color: rgba(255, 255, 255, 0.5); font-size: 11px;">
-    <button onclick="irACancelar()" style="background: none; border: none; color: #d4c070; cursor: pointer; text-decoration: none; transition: color 0.2s; font-size: 11px;">
-      ❌ Cancelar Reserva
-    </button>
-    <span style="margin: 0 8px;">•</span>
-    <button onclick="abrirReporteErrores()" style="background: none; border: none; color: #d4c070; cursor: pointer; text-decoration: none; transition: color 0.2s; font-size: 11px;">
-      🐛 Reportar errores
-    </button>
-    <span style="margin: 0 8px;">•</span>
-    <span>v1.2a</span>
-  </footer>
-
-  <!-- MODAL REPORTAR ERRORES -->
-  <div id="modalReporte" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: #1a3a6b; border: 1px solid rgba(200,168,75,0.3); border-radius: 12px; padding: 24px; max-width: 400px; width: 90%;">
-      <h3 style="color: #d4c070; margin-bottom: 12px; font-size: 16px;">Reportar Error</h3>
-      <textarea id="textoReporte" placeholder="Describe el error que encontraste..." style="width: 100%; height: 120px; padding: 12px; border-radius: 6px; border: 1px solid rgba(200,168,75,0.2); background: rgba(255,255,255,0.05); color: #f0e6d0; font-family: inherit; resize: none; font-size: 12px; margin-bottom: 12px; box-sizing: border-box;"></textarea>
-      <div style="display: flex; gap: 12px; justify-content: flex-end;">
-        <button onclick="cerrarReporteErrores()" style="padding: 10px 16px; background: rgba(200,168,75,0.1); border: 1px solid rgba(200,168,75,0.3); color: #d4c070; border-radius: 6px; cursor: pointer; font-size: 12px;">Cancelar</button>
-        <button onclick="enviarReporte()" style="padding: 10px 16px; background: #c8a84b; border: none; color: #1a3a6b; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Enviar</button>
-      </div>
-    </div>
-  </div>
-
   <script>
     const API_BASE = 'https://ceq-reservas-api.onrender.com/api';
     let espacioSeleccionado = 1;
@@ -702,81 +659,21 @@
     }
 
     function configurarBotonespacios() {
-      document.querySelectorAll('.space-btn[data-espacio]').forEach(btn => {
+      document.querySelectorAll('.space-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          const espacio = parseInt(btn.dataset.espacio);
-          
-          // Limpiar selecciones
-          document.querySelectorAll('.space-btn[data-espacio]').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.space-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-          
-          espacioSeleccionado = espacio;
-          document.getElementById('espacioNombre').value = espacio === 1 ? 'Altillo' : espacio === 2 ? 'Sala de Reuniones' : 'Frente';
+          espacioSeleccionado = parseInt(btn.dataset.espacio);
+          document.getElementById('espacioNombre').value = espacios[espacioSeleccionado];
           document.getElementById('fecha').value = '';
-          document.getElementById('hoursGrid').innerHTML = ''; // Limpiar horarios
+          document.getElementById('hoursGrid').innerHTML = '';
           document.getElementById('selectedRange').style.display = 'none';
           document.getElementById('reservasDelDia').innerHTML = '';
           diaSeleccionado = null;
           horasSeleccionadas = [];
-          
           actualizarCalendario();
         });
       });
-    }
-
-    function seleccionarDia(fecha) {
-      // Verificar que hay espacio seleccionado
-      if (!espacioSeleccionado) {
-        mostrarError('Selecciona un espacio primero');
-        return;
-      }
-
-      // Limpiar selección anterior
-      document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
-      
-      // Marcar nuevo día seleccionado
-      const [año, mes, día] = fecha.split('-');
-      const diaNum = parseInt(día);
-      
-      const dias = document.querySelectorAll('.calendar-day');
-      dias.forEach(d => {
-        const textContent = d.querySelector('.calendar-day-number').textContent.trim();
-        if (parseInt(textContent) === diaNum) {
-          d.classList.add('selected');
-        }
-      });
-
-      diaSeleccionado = fecha;
-      document.getElementById('fecha').value = fecha;
-      
-      // Mostrar horarios SOLO después de seleccionar día
-      if (espacioSeleccionado === 3) {
-        // Para Frente: mostrar 3 botones
-        document.getElementById('hoursGrid').innerHTML = `
-          <button class="space-btn" style="width: 100%; padding: 12px; margin-bottom: 8px;" onclick="seleccionarFrente(this, '07:00', '10:00')">🌅 Desayuno (07:00-10:00)</button>
-          <button class="space-btn" style="width: 100%; padding: 12px; margin-bottom: 8px;" onclick="seleccionarFrente(this, '10:00', '13:00')">☀️ Almuerzo (10:00-13:00)</button>
-          <button class="space-btn" style="width: 100%; padding: 12px;" onclick="seleccionarFrente(this, '14:00', '18:00')">🌆 Merienda (14:00-18:00)</button>
-        `;
-        document.getElementById('selectedRange').style.display = 'none';
-      } else {
-        // Para Altillo o Sala: mostrar horas individuales
-        actualizarHorasDisponibles(fecha);
-      }
-      
-      mostrarReservasDelDia(fecha);
-    }
-
-    function seleccionarFrente(btn, horaInicio, horaFin) {
-      // Marcar como activo
-      document.querySelectorAll('#hoursGrid .space-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      // Guardar datos de Frente
-      horasSeleccionadas = [horaInicio, horaFin];
-      
-      // Mostrar horario seleccionado
-      document.getElementById('selectedRange').style.display = 'block';
-      document.getElementById('selectedRange').innerHTML = `<strong>${horaInicio} - ${horaFin}</strong>`;
     }
 
     function actualizarCalendario() {
@@ -800,77 +697,62 @@
         grid.appendChild(empty);
       }
 
-      // Días del mes + primera semana del siguiente
+      // Días del mes
       const hoy = new Date();
       const hoyStr = hoy.toISOString().split('T')[0];
-      
-      let diasMostrados = 0;
-      const maxDias = diasEnMes + 7; // mes actual + hasta 7 días del siguiente
 
-      for (let dia = 1; diasMostrados < maxDias; dia++) {
-        // Si pasamos los días del mes actual, cambiar a mes siguiente
-        if (dia > diasEnMes) {
-          if (diasMostrados - diasEnMes >= 7) break; // Solo primera semana del siguiente
-          const fechaObj = new Date(año, mes + 1, dia - diasEnMes);
-          const fechaSiguiente = `${año}-${String(mes + 2).padStart(2, '0')}-${String(dia - diasEnMes).padStart(2, '0')}`;
-          dia = dia - diasEnMes;
-          
-          // Crear elemento para mes siguiente
-          const dayEl = document.createElement('div');
-          dayEl.className = 'calendar-day disabled';
-          dayEl.innerHTML = `<div class="calendar-day-number">${dia}</div>`;
-          grid.appendChild(dayEl);
-          diasMostrados++;
-          continue;
-        }
-
+      for (let dia = 1; dia <= diasEnMes; dia++) {
         const fecha = `${año}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+
         const fechaObj = new Date(año, mes, dia);
         const esFinDeSemana = fechaObj.getDay() === 0 || fechaObj.getDay() === 6;
-        const esPasado = fecha < hoyStr;
 
         const reservasDia = reservasActuales.filter(r => 
           r.fecha === fecha && r.espacio_id === espacioSeleccionado && r.estado === 'activa'
         );
 
-        // Calcular disponibilidad (0-24 horas)
-        const horasOcupadas = new Set();
-        reservasDia.forEach(r => {
-          const horaI = parseInt(r.hora_inicio.split(':')[0]);
-          const horaF = parseInt(r.hora_fin.split(':')[0]);
-          for (let h = horaI; h < horaF; h++) {
-            horasOcupadas.add(h);
-          }
-        });
-        const horasDisponibles = 10 - horasOcupadas.size; // 10 horas posibles (08:00-18:00)
-
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day';
         
-        // Agregar clase de color según disponibilidad
-        if (esPasado || esFinDeSemana) {
-          dayEl.classList.add('disabled');
-        } else if (horasDisponibles === 0) {
-          dayEl.classList.add('fully-booked'); // ROJO - sin disponibilidad
-        } else if (horasDisponibles < 5) {
-          dayEl.classList.add('partially-booked'); // AMARILLO - parcialmente disponible
-        } else {
-          dayEl.classList.add('available'); // VERDE - disponible
-        }
-
+        // Deshabilitar días pasados y fin de semana
+        const esPasado = fecha < hoyStr;
+        
+        if (reservasDia.length > 0) dayEl.classList.add('has-reservas');
         if (fecha === hoyStr) dayEl.classList.add('today');
+        if (esPasado || esFinDeSemana) dayEl.classList.add('disabled');
 
         dayEl.innerHTML = `
           <div class="calendar-day-number">${dia}</div>
-          ${reservasDia.length > 0 ? `<div class="calendar-day-indicator">${reservasDia.length}</div>` : ''}
+          ${reservasDia.length > 0 ? `<div class="calendar-day-indicator">${reservasDia.length} reserva${reservasDia.length > 1 ? 's' : ''}</div>` : ''}
         `;
 
         if (!esPasado && !esFinDeSemana) {
           dayEl.addEventListener('click', () => seleccionarDia(fecha));
         }
         grid.appendChild(dayEl);
-        diasMostrados++;
       }
+    }
+
+    function seleccionarDia(fecha) {
+      // Limpiar selección anterior
+      document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
+      
+      // Marcar nuevo día seleccionado
+      const [año, mes, día] = fecha.split('-');
+      const diaNum = parseInt(día);
+      
+      const dias = document.querySelectorAll('.calendar-day');
+      dias.forEach(d => {
+        const textContent = d.querySelector('.calendar-day-number').textContent.trim();
+        if (parseInt(textContent) === diaNum) {
+          d.classList.add('selected');
+        }
+      });
+
+      diaSeleccionado = fecha;
+      document.getElementById('fecha').value = fecha;
+      actualizarHorasDisponibles(fecha);
+      mostrarReservasDelDia(fecha);
     }
 
     function actualizarHorasDisponibles(fecha) {
@@ -1048,21 +930,11 @@
       }
 
       try {
-        // Para Frente, horasSeleccionadas ya tiene [inicio, fin]
-        let horaInicio, horaFin;
-        
-        if (espacioSeleccionado === 3 && horasSeleccionadas.length === 2) {
-          // Frente: usar directamente
-          horaInicio = horasSeleccionadas[0];
-          horaFin = horasSeleccionadas[1];
-        } else {
-          // Altillo o Sala: calcular desde horas individuales
-          horaInicio = horasSeleccionadas[0];
-          const [horaI] = horaInicio.split(':');
-          const [horaU] = horasSeleccionadas[horasSeleccionadas.length - 1].split(':');
-          const minuto = horaInicio.split(':')[1];
-          horaFin = String(parseInt(horaU) + 1).padStart(2, '0') + ':' + minuto;
-        }
+        // Calcular hora_fin
+        const [horaInicio] = horasSeleccionadas[0].split(':');
+        const [horaFin] = horasSeleccionadas[horasSeleccionadas.length - 1].split(':');
+        const minuto = horasSeleccionadas[0].split(':')[1];
+        const horaFinCalculada = String(parseInt(horaFin) + 1).padStart(2, '0') + ':' + minuto;
 
         const res = await fetch(`${API_BASE}/reservas`, {
           method: 'POST',
@@ -1072,8 +944,8 @@
             nombre_solicitante: nombre,
             contacto: `${celular} | ${email}`,
             fecha: diaSeleccionado,
-            hora_inicio: horaInicio,
-            hora_fin: horaFin,
+            hora_inicio: horasSeleccionadas[0],
+            hora_fin: horaFinCalculada,
             motivo: motivo
           })
         });
@@ -1084,11 +956,7 @@
           return;
         }
 
-        // Mostrar modal con código de cancelación
-        document.getElementById('codigoTexto').textContent = data.codigo || 'RES-ERROR';
-        document.getElementById('modalCodigo').style.display = 'flex';
-
-        mostrarExito(`Reserva creada: ${horaInicio} - ${horaFin}`);
+        mostrarExito(`Reserva creada: ${horasSeleccionadas[0]} - ${horaFinCalculada}`);
         
         document.getElementById('nombre').value = '';
         document.getElementById('celular').value = '';
@@ -1134,67 +1002,6 @@
     function hoy() {
       mesCalendario = new Date();
       actualizarCalendario();
-    }
-
-    // REPORTAR ERRORES
-    function irACancelar() {
-      const codigo = prompt('¿Olvidaste tu código?\n\nContacta al moderador por WhatsApp:');
-      if (!codigo) return;
-      
-      window.location.href = 'https://ceq-reservas-frontend.vercel.app/cancelar.html';
-    }
-
-    function copiarCodigo() {
-      const codigo = document.getElementById('codigoTexto').textContent;
-      navigator.clipboard.writeText(codigo).then(() => {
-        alert('✓ Código copiado al portapapeles');
-      }).catch(() => {
-        alert('Error al copiar');
-      });
-    }
-
-    function cerrarModalCodigo() {
-      document.getElementById('modalCodigo').style.display = 'none';
-    }
-
-    function abrirReporteErrores() {
-      document.getElementById('modalReporte').style.display = 'flex';
-    }
-
-    function cerrarReporteErrores() {
-      document.getElementById('modalReporte').style.display = 'none';
-      document.getElementById('textoReporte').value = '';
-    }
-
-    function enviarReporte() {
-      const texto = document.getElementById('textoReporte').value.trim();
-      if (!texto) {
-        alert('Por favor describe el error');
-        return;
-      }
-
-      fetch(`${API_BASE}/reportes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mensaje: texto,
-          url: window.location.href,
-          navegador: navigator.userAgent
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.reporte) {
-          alert('✓ Reporte enviado. ¡Gracias!');
-          cerrarReporteErrores();
-        } else {
-          alert('Error al enviar');
-        }
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        alert('Error al enviar el reporte');
-      });
     }
 
     init();
