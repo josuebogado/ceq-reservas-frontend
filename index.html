@@ -1038,37 +1038,35 @@
       document.getElementById('textoReporte').value = '';
     }
 
-    async function enviarReporte() {
+    function enviarReporte() {
       const texto = document.getElementById('textoReporte').value.trim();
       if (!texto) {
         alert('Por favor describe el error');
         return;
       }
 
-      try {
-        const respuesta = await fetch('https://formspree.io/f/xzzyowwj', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: texto,
-            fecha: new Date().toISOString(),
-            url: window.location.href
-          })
-        });
-
-        if (respuesta.ok) {
+      fetch(`${API_BASE}/reportes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mensaje: texto,
+          url: window.location.href,
+          navegador: navigator.userAgent
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.reporte) {
           alert('✓ Reporte enviado. ¡Gracias!');
           cerrarReporteErrores();
         } else {
-          throw new Error('Error en respuesta');
+          alert('Error al enviar');
         }
-      } catch (error) {
-        console.error('Error:', error);
-        // Alternativa: enviar por email directo
-        const asunto = encodeURIComponent('Reporte de Error - Sistema de Reservas');
-        const cuerpo = encodeURIComponent(`Reporte: ${texto}\n\nFecha: ${new Date().toISOString()}\nURL: ${window.location.href}`);
-        window.location.href = `mailto:josuebogado321@gmail.com?subject=${asunto}&body=${cuerpo}`;
-      }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Error al enviar el reporte');
+      });
     }
 
     init();
