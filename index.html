@@ -188,19 +188,9 @@
       background: rgba(200, 168, 75, 0.05);
     }
 
-    .calendar-day.free {
+    .calendar-day.has-reservas {
       background: rgba(80, 200, 80, 0.15);
       border-color: #5cc85c;
-    }
-
-    .calendar-day.has-reservas {
-      background: rgba(255, 200, 0, 0.18);
-      border-color: #ffd54d;
-    }
-
-    .calendar-day.full {
-      background: rgba(220, 80, 80, 0.22);
-      border-color: #ff6b6b;
     }
 
     .calendar-day.today {
@@ -689,7 +679,7 @@
     function actualizarCalendario() {
       const mes = mesCalendario.getMonth();
       const año = mesCalendario.getFullYear();
-
+      
       document.getElementById('calendarMonth').textContent = 
         new Intl.DateTimeFormat('es-PY', { month: 'long', year: 'numeric' }).format(mesCalendario);
 
@@ -721,47 +711,13 @@
           r.fecha === fecha && r.espacio_id === espacioSeleccionado && r.estado === 'activa'
         );
 
-        // calcular ocupación real para color del día
-        let ocupados = 0;
-
-        if (espacioSeleccionado === 3) {
-          const turnos = [
-            { inicio: '07:00', fin: '10:00' },
-            { inicio: '10:00', fin: '13:00' },
-            { inicio: '14:00', fin: '18:00' }
-          ];
-
-          ocupados = turnos.filter(t =>
-            reservasDia.some(r => r.hora_inicio === t.inicio && r.hora_fin === t.fin)
-          ).length;
-        } else {
-          const horasOcupadas = new Set();
-          reservasDia.forEach(r => {
-            const [horaIni] = r.hora_inicio.split(':');
-            const [horaFin] = r.hora_fin.split(':');
-            for (let i = parseInt(horaIni); i < parseInt(horaFin); i++) {
-              horasOcupadas.add(`${i.toString().padStart(2, '0')}:00`);
-            }
-          });
-          ocupados = horasOcupadas.size;
-        }
-
-        const capacidadTotal = espacioSeleccionado === 3 ? 3 : 9;
-
         const dayEl = document.createElement('div');
         dayEl.className = 'calendar-day';
-
+        
         // Deshabilitar días pasados y fin de semana
         const esPasado = fecha < hoyStr;
-
-        if (ocupados === 0) {
-          dayEl.classList.add('free');
-        } else if (ocupados >= capacidadTotal) {
-          dayEl.classList.add('full');
-        } else {
-          dayEl.classList.add('has-reservas');
-        }
-
+        
+        if (reservasDia.length > 0) dayEl.classList.add('has-reservas');
         if (fecha === hoyStr) dayEl.classList.add('today');
         if (esPasado || esFinDeSemana) dayEl.classList.add('disabled');
 
@@ -803,51 +759,9 @@
       const grid = document.getElementById('hoursGrid');
       grid.innerHTML = '';
       horasSeleccionadas = [];
-      document.getElementById('selectedRange').style.display = 'none';
-
-      // Frente: desayuno / almuerzo / merienda
-      if (espacioSeleccionado === 3) {
-        const turnos = [
-          { nombre: '🌅 Desayuno', inicio: '07:00', fin: '10:00' },
-          { nombre: '🍽 Almuerzo', inicio: '10:00', fin: '13:00' },
-          { nombre: '☕ Merienda', inicio: '14:00', fin: '18:00' }
-        ];
-
-        const reservasDelDia = reservasActuales.filter(r => 
-          r.espacio_id === espacioSeleccionado && r.fecha === fecha && r.estado === 'activa'
-        );
-
-        turnos.forEach(turno => {
-          const ocupado = reservasDelDia.some(r =>
-            r.hora_inicio === turno.inicio && r.hora_fin === turno.fin
-          );
-
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'hour-btn';
-          btn.innerHTML = `${turno.nombre}<br><small>${turno.inicio} - ${turno.fin}</small>`;
-
-          if (ocupado) {
-            btn.classList.add('disabled');
-            btn.disabled = true;
-          } else {
-            btn.addEventListener('click', () => {
-              document.querySelectorAll('.hour-btn').forEach(b => b.classList.remove('selected'));
-              btn.classList.add('selected');
-              horasSeleccionadas = [turno.inicio];
-              mostrarRango();
-              validarFormulario();
-            });
-          }
-
-          grid.appendChild(btn);
-        });
-
-        return;
-      }
 
       const horas = Array.from({ length: 10 }, (_, i) => `${(i + 8).toString().padStart(2, '0')}:00`);
-
+      
       const reservasDelDia = reservasActuales.filter(r => 
         r.espacio_id === espacioSeleccionado && r.fecha === fecha && r.estado === 'activa'
       );
@@ -939,28 +853,10 @@
       if (horasSeleccionadas.length === 0) return;
 
       const rangoDiv = document.getElementById('selectedRange');
-
-      // Frente: turnos fijos
-      if (espacioSeleccionado === 3) {
-        const inicio = horasSeleccionadas[0];
-        const turnos = {
-          '07:00': ['🌅 Desayuno', '07:00', '10:00'],
-          '10:00': ['🍽 Almuerzo', '10:00', '13:00'],
-          '14:00': ['☕ Merienda', '14:00', '18:00']
-        };
-
-        const turno = turnos[inicio];
-        if (turno) {
-          rangoDiv.innerHTML = `${turno[0]}<br>${turno[1]} - ${turno[2]}`;
-          rangoDiv.style.display = 'block';
-          return;
-        }
-      }
-
       const [hInicio] = horasSeleccionadas[0].split(':');
       const [hFin] = horasSeleccionadas[horasSeleccionadas.length - 1].split(':');
       const duracion = parseInt(hFin) - parseInt(hInicio) + 1;
-
+      
       rangoDiv.textContent = `${horasSeleccionadas[0]} - ${String(parseInt(hFin) + 1).padStart(2, '0')}:00 (${duracion} hora${duracion > 1 ? 's' : ''})`;
       rangoDiv.style.display = 'block';
     }
@@ -1022,40 +918,24 @@
       );
     }
 
-     async function crearReserva() {
+    async function crearReserva() {
       const nombre = document.getElementById('nombre').value.trim();
       const celular = document.getElementById('celular').value.trim();
       const email = document.getElementById('email').value.trim();
       const motivo = document.getElementById('motivo').value.trim();
- 
+
       if (horasSeleccionadas.length === 0) {
         mostrarError('Selecciona al menos 1 hora');
         return;
       }
- 
+
       try {
-        let horaInicio = horasSeleccionadas[0];
-        let horaFinCalculada;
- 
-        // Frente: turnos fijos
-        if (espacioSeleccionado === 3) {
-          if (horaInicio === '07:00') {
-            horaFinCalculada = '10:00';
-          } else if (horaInicio === '10:00') {
-            horaFinCalculada = '13:00';
-          } else if (horaInicio === '14:00') {
-            horaFinCalculada = '18:00';
-          } else {
-            mostrarError('Turno inválido');
-            return;
-          }
-        } else {
-          // ✅ CORRECCIÓN: Extraer la hora correcta de la ÚLTIMA hora seleccionada
-          const ultimaHora = horasSeleccionadas[horasSeleccionadas.length - 1];
-          const [horaFin] = ultimaHora.split(':');
-          horaFinCalculada = String(parseInt(horaFin) + 1).padStart(2, '0') + ':00';
-        }
- 
+        // Calcular hora_fin
+        const [horaInicio] = horasSeleccionadas[0].split(':');
+        const [horaFin] = horasSeleccionadas[horasSeleccionadas.length - 1].split(':');
+        const minuto = horasSeleccionadas[0].split(':')[1];
+        const horaFinCalculada = String(parseInt(horaFin) + 1).padStart(2, '0') + ':' + minuto;
+
         const res = await fetch(`${API_BASE}/reservas`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1064,20 +944,20 @@
             nombre_solicitante: nombre,
             contacto: `${celular} | ${email}`,
             fecha: diaSeleccionado,
-            hora_inicio: horaInicio,
+            hora_inicio: horasSeleccionadas[0],
             hora_fin: horaFinCalculada,
             motivo: motivo
           })
         });
- 
+
         const data = await res.json();
         if (!res.ok) {
           mostrarError(data.error);
           return;
         }
- 
-        mostrarExito(`Reserva creada: ${horaInicio} - ${horaFinCalculada}`);
- 
+
+        mostrarExito(`Reserva creada: ${horasSeleccionadas[0]} - ${horaFinCalculada}`);
+        
         document.getElementById('nombre').value = '';
         document.getElementById('celular').value = '';
         document.getElementById('email').value = '';
@@ -1087,11 +967,10 @@
         document.getElementById('selectedRange').style.display = 'none';
         diaSeleccionado = null;
         horasSeleccionadas = [];
- 
+
         await cargarReservas();
         actualizarCalendario();
       } catch (error) {
-        console.error('Error al crear reserva:', error);
         mostrarError('Error al crear la reserva');
       }
     }
